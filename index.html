@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Super Toñita - Panel Gerencial (App)</title>
+  
+  <link rel="icon" type="image/png" href="tienda.png">
+  <link rel="apple-touch-icon" href="tienda.png">
+  <meta name="theme-color" content="#1e3a5f">
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <!-- Firebase SDKs Compatibles para HTML plano -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  
+  <style>
+    :root {
+      --bg-header: #1e3a5f;
+      --accent-blue: #1d528d;
+      --border-color: #cbd3df;
+      --text-main: #222;
+      --yellow-bar: #d99a27;
+      --green-corte: #225137;
+      --red-btn: #d9534f;
+      --bg-app: #f4f6f9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; }
+    body { background-color: var(--bg-app); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    .top-bar { background: var(--bg-header); color: #fff; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); z-index: 100; }
+    .brand { font-size: 15px; font-weight: bold; display: flex; gap: 8px; align-items: center; }
+    .brand img { height: 28px; width: 28px; filter: brightness(0) invert(1); }
+    
+    .sucursal-selector { display: flex; gap: 4px; background: #112238; padding: 3px; border-radius: 6px; }
+    .suc-btn { background: transparent; border: 1px solid #4a6fa5; color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; transition: all 0.2s; }
+    .suc-btn.active { background: var(--yellow-bar); border-color: #b37a18; color: #000; }
+    .suc-btn.global { background: #28a745; border-color: #1e7e34; color: #fff; }
+    .suc-btn.global.active { background: #fff; color: #28a745; }
+
+    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 12px; background: #fff; margin-bottom: 60px; }
+    .section-view { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding-bottom: 20px; }
+    .section-view.active { display: flex; }
+
+    .pro-dashboard { display: flex; flex-direction: column; gap: 12px; }
+    .pro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+    .pro-card { background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+    .pro-card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-blue); }
+    .pro-card.green::after { background: var(--green-corte); }
+    .pro-card.red::after { background: var(--red-btn); }
+    .pro-card.yellow::after { background: var(--yellow-bar); }
+    .pro-card h4 { color: #555; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pro-card .val { font-size: 20px; font-weight: bold; color: var(--text-main); }
+    
+    .progress-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; }
+    .progress-bar-container { background: #e2e8f0; border-radius: 6px; height: 10px; width: 100%; overflow: hidden; margin-top: 8px; margin-bottom: 6px; }
+    .progress-bar-fill { background: var(--accent-blue); height: 100%; width: 0%; transition: width 0.4s ease; }
+
+    .form-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 12px; max-width: 100%; }
+    .field-group { margin-bottom: 10px; position: relative; }
+    .field-group label { display: block; font-weight: bold; margin-bottom: 3px; color: #333; font-size: 12px; }
+    .field-group input, .field-group select { width: 100%; padding: 8px; border: 1px solid #7f9db9; border-radius: 5px; font-size: 13px; background: #fff; }
+    
+    .btn-main { background: #28a745; color: #fff; border: none; padding: 9px 15px; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; font-size: 13px; }
+    .btn-pdf { background: var(--red-btn); color: #fff; border: none; padding: 8px 12px; font-weight: bold; border-radius: 5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 12px; }
+    
+    .table-container { flex: 1; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; margin-top: 6px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: #e6ebf2; padding: 8px; border-bottom: 1px solid #b8c4d3; position: sticky; top: 0; z-index: 2; font-size: 11px; color: #333; text-transform: uppercase; }
+    td { padding: 8px; border-bottom: 1px solid #e1e6ed; font-size: 12px; }
+
+    .floating-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1e3a5f; display: grid; grid-template-columns: repeat(7, 1fr); padding: 6px 2px; box-shadow: 0 -4px 10px rgba(0,0,0,0.15); z-index: 1000; border-top: 1px solid #2c4d75; }
+    .nav-btn-app { background: transparent; border: none; color: #cbd3df; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 0; border-radius: 6px; cursor: pointer; font-size: 9px; font-weight: bold; }
+    .nav-btn-app span.icon { font-size: 15px; margin-bottom: 1px; }
+    .nav-btn-app.active { background: var(--yellow-bar); color: #000; }
+
+    .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 15px; }
+    .modal-box { background: #fff; padding: 20px; border-radius: 10px; width: 100%; max-width: 350px; box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+
+    @media (min-width: 768px) {
+      body { max-width: 1200px; margin: 0 auto; border-left: 1px solid #ddd; border-right: 1px solid #ddd; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+      .floating-nav { max-width: 1200px; left: auto; right: auto; width: 100%; }
+      .pro-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="brand">
+      <img src="tienda.png" alt="Icono" onerror="this.style.display='none'">
+      <span>SUPER TOÑITA</span>
+    </div>
+    <div class="sucursal-selector">
+      <button class="suc-btn global active" id="btnSucGlobal" onclick="cambiarSucursal('global')">🌐 Global</button>
+      <button class="suc-btn" id="btnSucCorinto" onclick="cambiarSucursal('corinto')">Corinto</button>
+      <button class="suc-btn" id="btnSucFuentes" onclick="cambiarSucursal('los_fuentes')">Fuentes</button>
+      <button class="suc-btn" id="btnSucMetapan" onclick="cambiarSucursal('metapan')">Metapán</button>
+    </div>
+  </div>
+
+  <main>
+    <section id="resumenView" class="section-view active">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+        <h3 style="color: var(--accent-blue); font-size: 14px;"><span id="lblSucursalActualTitulo" style="text-transform: uppercase; color: var(--green-corte);">GLOBAL</span></h3>
+        <button id="btnEditarSaldo" class="btn-main" style="display: none; background: var(--yellow-bar); color: #000; width: auto; padding: 6px 12px; font-size: 12px;" onclick="editarSaldoAsignado()">✏️ Modificar Saldo</button>
+      </div>
+      
+      <div class="pro-dashboard">
+        <div class="pro-grid">
+          <div class="pro-card">
+            <h4>Saldo Operativo</h4>
+            <div class="val" id="statSaldoAsignado">$0.00</div>
+            <small style="color: #666; font-size: 9px;">Base inicial asignada</small>
+          </div>
+          <div class="pro-card red">
+            <h4>Total Compras</h4>
+            <div class="val" id="statTotalCompras" style="color: var(--red-btn);">$0.00</div>
+            <small style="color: #666; font-size: 9px;">Inversión con proveedores</small>
+          </div>
+          <div class="pro-card green">
+            <h4>Saldo Disponible</h4>
+            <div class="val" id="statSaldoDisponible" style="color: var(--green-corte);">$0.00</div>
+            <small style="color: #666; font-size: 9px;">Remanente operativo</small>
+          </div>
+          <div class="pro-card yellow">
+            <h4>Ventas Netas Totales</h4>
+            <div class="val" id="statTotalVentas" style="color: #b37a18;">$0.00</div>
+            <small style="color: #666; font-size: 9px;">Efectivo + Tarjetas (Neto)</small>
+          </div>
+        </div>
+
+        <div class="progress-box">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <b style="font-size: 12px; color: var(--accent-blue);">📊 Nivel de Ejecución de Compras vs Saldo</b>
+            <span id="lblPorcentajeGasto" style="font-weight: bold; font-size: 12px;">0%</span>
+          </div>
+          <div class="progress-bar-container">
+            <div id="barraProgresoFill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div style="background: #f8fafc; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+            <h4 style="color: var(--green-corte); margin-bottom: 4px; font-size: 11px;">💵 Ventas Efectivo (Gaveta)</h4>
+            <div style="font-size: 18px; font-weight: bold; color: var(--green-corte);" id="lblTotalEfectivoSolo">$0.00</div>
+          </div>
+          <div style="background: #f8fafc; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+            <h4 style="color: var(--accent-blue); margin-bottom: 4px; font-size: 11px;">💳 Ventas Tarjeta (Neto Banco)</h4>
+            <div style="font-size: 18px; font-weight: bold; color: var(--accent-blue);" id="lblTotalTarjetaNetoSolo">$0.00</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="comprasView" class="section-view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="color: var(--accent-blue); font-size: 14px;">Control de Compras</h3>
+        <button class="btn-pdf" onclick="abrirModalPDF('compras')">📄 Descargar PDF</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead><tr id="headTablaCompras"><th>Fecha</th><th>Proveedor</th><th>Factura</th><th>Monto</th></tr></thead>
+          <tbody id="tablaComprasBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="agendaView" class="section-view">
+      <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">📅 Agenda de Pedidos</h3>
+      <div class="table-container" style="flex: 1;">
+        <table>
+          <thead><tr id="headTablaAgenda"><th>Fecha</th><th>Proveedor</th><th>Monto</th><th>Estado</th></tr></thead>
+          <tbody id="tablaAgendaBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="ventasView" class="section-view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="color: var(--accent-blue); font-size: 14px;">Registro de Ventas</h3>
+        <button class="btn-pdf" onclick="abrirModalPDF('ventas')">📄 Descargar PDF</button>
+      </div>
+      <div class="table-container" style="flex: 1;">
+        <table>
+          <thead><tr id="headVentasGeneral"><th>Hora</th><th>Tipo</th><th>Monto Neto</th><th>Cajero</th></tr></thead>
+          <tbody id="tablaVentasGeneralBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="reporteProvView" class="section-view">
+      <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">📊 Reporte por Proveedor</h3>
+      <div class="form-box">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div class="field-group" style="margin-bottom:0;"><label>Desde:</label><input type="date" id="repProvFechaIni"></div>
+          <div class="field-group" style="margin-bottom:0;"><label>Hasta:</label><input type="date" id="repProvFechaFin"></div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button class="btn-main" style="background: var(--accent-blue);" onclick="generarReporteProveedores()">🔍 Generar Reporte</button>
+        </div>
+      </div>
+      <div class="table-container" style="flex: 1;">
+        <table>
+          <thead><tr><th>Fecha / Factura</th><th>Proveedor / Detalle</th><th>Monto</th></tr></thead>
+          <tbody id="tablaReporteProveedoresBody"><tr><td colspan="3">Seleccione rango y genere el reporte.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="configView" class="section-view">
+      <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">⚙️ Proveedores y Cajeros</h3>
+      <div class="form-box">
+        <h4 style="color: var(--accent-blue); margin-bottom: 8px;">🚚 Proveedores</h4>
+        <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+          <input type="text" id="inputNuevoProveedor" placeholder="Nuevo proveedor..." style="flex:1;">
+          <button class="btn-main" style="width: auto; padding: 6px 12px;" onclick="agregarProveedorGlobal()">+ Añadir</button>
+        </div>
+        <div class="table-container" style="max-height: 140px;">
+          <table><thead><tr><th>Proveedor</th><th>Acción</th></tr></thead><tbody id="tablaConfigProveedoresBody"></tbody></table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="floating-nav">
+    <button class="nav-btn-app active" id="navResumen" onclick="switchTab('resumenView', this)"><span class="icon">📊</span> Dashboard</button>
+    <button class="nav-btn-app" id="navCompras" onclick="switchTab('comprasView', this)"><span class="icon">🛒</span> Compras</button>
+    <button class="nav-btn-app" id="navAgenda" onclick="switchTab('agendaView', this)"><span class="icon">📅</span> Agenda</button>
+    <button class="nav-btn-app" id="navVentas" onclick="switchTab('ventasView', this)"><span class="icon">💰</span> Ventas</button>
+    <button class="nav-btn-app" id="navReporteProv" onclick="switchTab('reporteProvView', this)"><span class="icon">📋</span> R.Prov</button>
+    <button class="nav-btn-app" id="navConfig" onclick="switchTab('configView', this)"><span class="icon">⚙️</span> Config</button>
+  </nav>
+
+  <script>
+    // ⚙️ TU CONFIGURACIÓN REAL DE FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyBNk49StovMVyxQnSmL3qK-5qJyE0cERwc",
+      authDomain: "control-multisucursal.firebaseapp.com",
+      projectId: "control-multisucursal",
+      storageBucket: "control-multisucursal.firebasestorage.app",
+      messagingSenderId: "103293123018",
+      appId: "1:103293123018:web:c38e9fac24287cc4ed7733",
+      measurementId: "G-3PQZ8DBSW2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let sucursalActual = 'global';
+    let baseDatosGlobal = {
+      corinto: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [] },
+      los_fuentes: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [] },
+      metapan: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [] }
+    };
+
+    function sincronizarFirebase() {
+      ['corinto', 'los_fuentes', 'metapan'].forEach(suc => {
+        db.collection('sucursales').doc(suc).onSnapshot(doc => {
+          if (doc.exists) {
+            baseDatosGlobal[suc] = doc.data();
+            actualizarDashboard();
+          }
+        });
+      });
+    }
+
+    function cambiarSucursal(suc) {
+      sucursalActual = suc;
+      document.querySelectorAll('.suc-btn').forEach(b => b.classList.remove('active'));
+      if(suc === 'global') document.getElementById('btnSucGlobal').classList.add('active');
+      if(suc === 'corinto') document.getElementById('btnSucCorinto').classList.add('active');
+      if(suc === 'los_fuentes') document.getElementById('btnSucFuentes').classList.add('active');
+      if(suc === 'metapan') document.getElementById('btnSucMetapan').classList.add('active');
+      
+      document.getElementById('btnEditarSaldo').style.display = (suc === 'global') ? 'none' : 'inline-block';
+      actualizarDashboard();
+      if(document.getElementById('configView').classList.contains('active')) renderConfigTab();
+    }
+
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn-app').forEach(t => t.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      if(btnElement) btnElement.classList.add('active');
+      if(tabId === 'configView') renderConfigTab();
+    }
+
+    function editarSaldoAsignado() {
+      if(sucursalActual === 'global') return;
+      let actual = baseDatosGlobal[sucursalActual].saldoAsignado || 3500;
+      let nuevo = prompt(`Ingrese el nuevo saldo para ${sucursalActual.toUpperCase()} ($):`, actual);
+      if(nuevo !== null && !isNaN(nuevo)) {
+        baseDatosGlobal[sucursalActual].saldoAsignado = parseFloat(nuevo);
+        db.collection('sucursales').doc(sucursalActual).set(baseDatosGlobal[sucursalActual], { merge: true });
+      }
+    }
+
+    function actualizarDashboard() {
+      let sucursales = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
+      let tSaldo = 0, tComp = 0, tEfec = 0, tTarj = 0;
+      let compsList = [], ventasList = [];
+
+      sucursales.forEach(s => {
+        let d = baseDatosGlobal[s] || {};
+        tSaldo += (d.saldoAsignado || 0);
+        let comps = d.compras || [];
+        tComp += comps.reduce((a, b) => a + (b.monto || 0), 0);
+        comps.forEach(c => compsList.push({...c, sucursal: s}));
+
+        (d.ventas || []).forEach(v => {
+          if(v.metodoPago === 'efectivo') tEfec += (v.total || 0);
+          else tTarj += (v.montoNeto || 0);
+          ventasList.push({...v, sucursal: s});
+        });
+      });
+
+      let saldoDisp = tSaldo - tComp;
+      let porcentaje = tSaldo > 0 ? Math.min(100, Math.round((tComp / tSaldo) * 100)) : 0;
+
+      document.getElementById('lblSucursalActualTitulo').innerText = sucursalActual === 'global' ? 'GLOBAL CONSOLIDADO' : sucursalActual.replace('_', ' ');
+      document.getElementById('statSaldoAsignado').innerText = `$${tSaldo.toFixed(2)}`;
+      document.getElementById('statTotalCompras').innerText = `$${tComp.toFixed(2)}`;
+      document.getElementById('statSaldoDisponible').innerText = `$${saldoDisp.toFixed(2)}`;
+      document.getElementById('statTotalVentas').innerText = `$${(tEfec + tTarj).toFixed(2)}`;
+      document.getElementById('lblTotalEfectivoSolo').innerText = `$${tEfec.toFixed(2)}`;
+      document.getElementById('lblTotalTarjetaNetoSolo').innerText = `$${tTarj.toFixed(2)}`;
+
+      document.getElementById('lblPorcentajeGasto').innerText = `${porcentaje}%`;
+      document.getElementById('barraProgresoFill').style.width = `${porcentaje}%`;
+
+      document.getElementById('tablaComprasBody').innerHTML = compsList.map(c => `
+        <tr><td>${c.fecha ? c.fecha.slice(0,10) : ''}</td>${sucursalActual === 'global' ? `<td><b>${c.sucursal.toUpperCase()}</b></td>` : ''}<td><b>${c.proveedor}</b></td><td>${c.factura||'N/A'}</td><td style="color:red; font-weight:bold;">$${(c.monto||0).toFixed(2)}</td></tr>
+      `).join('') || '<tr><td colspan="5">Sin compras.</td></tr>';
+
+      document.getElementById('tablaVentasGeneralBody').innerHTML = ventasList.map(v => `
+        <tr><td>${v.fecha ? new Date(v.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</td>${sucursalActual === 'global' ? `<td><b>${v.sucursal.toUpperCase()}</b></td>` : ''}<td><b>${(v.metodoPago||'').toUpperCase()}</b></td><td style="color:green; font-weight:bold;">$${((v.metodoPago==='tarjeta'?v.montoNeto:v.total)||0).toFixed(2)}</td><td>${v.cajero||'Cajero'}</td></tr>
+      `).join('') || '<tr><td colspan="5">Sin ventas.</td></tr>';
+    }
+
+    function renderConfigTab() {
+      if(sucursalActual === 'global') {
+        document.getElementById('tablaConfigProveedoresBody').innerHTML = '<tr><td colspan="2">Selecciona una sucursal específica.</td></tr>';
+        return;
+      }
+      let provs = baseDatosGlobal[sucursalActual].proveedores || [];
+      document.getElementById('tablaConfigProveedoresBody').innerHTML = provs.map((p, i) => `
+        <tr><td><b>${p}</b></td><td><button onclick="eliminarProveedor(${i})" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td></tr>
+      `).join('') || '<tr><td colspan="2">Sin proveedores.</td></tr>';
+    }
+
+    function agregarProveedorGlobal() {
+      if(sucursalActual === 'global') return;
+      let val = document.getElementById('inputNuevoProveedor').value.trim();
+      if(!val) return;
+      if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
+      baseDatosGlobal[sucursalActual].proveedores.push(val);
+      document.getElementById('inputNuevoProveedor').value = '';
+      db.collection('sucursales').doc(sucursalActual).set(baseDatosGlobal[sucursalActual], { merge: true });
+    }
+
+    function eliminarProveedor(i) {
+      if(sucursalActual === 'global') return;
+      baseDatosGlobal[sucursalActual].proveedores.splice(i, 1);
+      db.collection('sucursales').doc(sucursalActual).set(baseDatosGlobal[sucursalActual], { merge: true });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      sincronizarFirebase();
+      cambiarSucursal('global');
+    });
+  </script>
+</body>
+</html>
