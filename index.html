@@ -12,7 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   
-  <!-- Firebase SDKs Compatibles para HTML plano -->
+  <!-- Firebase SDKs Compatibles -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   
@@ -33,7 +33,40 @@
 
     .top-bar { background: var(--bg-header); color: #fff; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); z-index: 100; }
     .brand { font-size: 15px; font-weight: bold; display: flex; gap: 8px; align-items: center; }
-    .brand img { height: 28px; width: 28px; filter: brightness(0) invert(1); }
+    
+    /* 🎨 ICONO DE TIENDA NEGRO CSS (Diseño Minimalista Móvil) */
+    .store-icon-css {
+      width: 26px;
+      height: 26px;
+      position: relative;
+      display: inline-block;
+      background: #111;
+      border: 2px solid #333;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .store-icon-css::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -2px;
+      right: -2px;
+      height: 7px;
+      background: #000;
+      border-bottom: 2px solid var(--yellow-bar);
+      border-radius: 3px;
+    }
+    .store-icon-css::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 8px;
+      width: 7px;
+      height: 9px;
+      background: #fff;
+      border-top-left-radius: 2px;
+      border-top-right-radius: 2px;
+    }
     
     .sucursal-selector { display: flex; gap: 4px; background: #112238; padding: 3px; border-radius: 6px; }
     .suc-btn { background: transparent; border: 1px solid #4a6fa5; color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; transition: all 0.2s; }
@@ -45,19 +78,10 @@
     .section-view { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding-bottom: 20px; }
     .section-view.active { display: flex; }
 
-    .pro-dashboard { display: flex; flex-direction: column; gap: 12px; }
-    .pro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-    .pro-card { background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border: 1px solid var(--border-color); padding: 12px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
-    .pro-card::after { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-blue); }
-    .pro-card.green::after { background: var(--green-corte); }
-    .pro-card.red::after { background: var(--red-btn); }
-    .pro-card.yellow::after { background: var(--yellow-bar); }
-    .pro-card h4 { color: #555; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .pro-card .val { font-size: 20px; font-weight: bold; color: var(--text-main); }
-    
-    .progress-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; }
-    .progress-bar-container { background: #e2e8f0; border-radius: 6px; height: 10px; width: 100%; overflow: hidden; margin-top: 8px; margin-bottom: 6px; }
-    .progress-bar-fill { background: var(--accent-blue); height: 100%; width: 0%; transition: width 0.4s ease; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .stat-card { background: #f8fafc; border: 1px solid var(--border-color); padding: 10px 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+    .stat-card h4 { color: #555; font-size: 10px; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .val { font-size: 18px; font-weight: bold; color: var(--accent-blue); }
 
     .form-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; margin-bottom: 12px; max-width: 100%; }
     .field-group { margin-bottom: 10px; position: relative; }
@@ -83,15 +107,16 @@
     @media (min-width: 768px) {
       body { max-width: 1200px; margin: 0 auto; border-left: 1px solid #ddd; border-right: 1px solid #ddd; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
       .floating-nav { max-width: 1200px; left: auto; right: auto; width: 100%; }
-      .pro-grid { grid-template-columns: repeat(4, 1fr); }
+      .dashboard-grid { grid-template-columns: repeat(4, 1fr); }
     }
   </style>
 </head>
 <body>
 
+  <!-- BARRA SUPERIOR CON ICONO CSS NEGRO -->
   <div class="top-bar">
     <div class="brand">
-      <img src="tienda.png" alt="Icono" onerror="this.style.display='none'">
+      <div class="store-icon-css"></div>
       <span>SUPER TOÑITA</span>
     </div>
     <div class="sucursal-selector">
@@ -103,74 +128,98 @@
   </div>
 
   <main>
+    <!-- VISTA 1: RESUMEN Y SALDOS -->
     <section id="resumenView" class="section-view active">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-        <h3 style="color: var(--accent-blue); font-size: 14px;"><span id="lblSucursalActualTitulo" style="text-transform: uppercase; color: var(--green-corte);">GLOBAL</span></h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <h3 style="color: var(--accent-blue); font-size: 14px;">Sucursal: <span id="lblSucursalActualTitulo" style="text-transform: uppercase; color: var(--green-corte);">GLOBAL</span></h3>
         <button id="btnEditarSaldo" class="btn-main" style="display: none; background: var(--yellow-bar); color: #000; width: auto; padding: 6px 12px; font-size: 12px;" onclick="editarSaldoAsignado()">✏️ Modificar Saldo</button>
       </div>
       
-      <div class="pro-dashboard">
-        <div class="pro-grid">
-          <div class="pro-card">
-            <h4>Saldo Operativo</h4>
-            <div class="val" id="statSaldoAsignado">$0.00</div>
-            <small style="color: #666; font-size: 9px;">Base inicial asignada</small>
-          </div>
-          <div class="pro-card red">
-            <h4>Total Compras</h4>
-            <div class="val" id="statTotalCompras" style="color: var(--red-btn);">$0.00</div>
-            <small style="color: #666; font-size: 9px;">Inversión con proveedores</small>
-          </div>
-          <div class="pro-card green">
-            <h4>Saldo Disponible</h4>
-            <div class="val" id="statSaldoDisponible" style="color: var(--green-corte);">$0.00</div>
-            <small style="color: #666; font-size: 9px;">Remanente operativo</small>
-          </div>
-          <div class="pro-card yellow">
-            <h4>Ventas Netas Totales</h4>
-            <div class="val" id="statTotalVentas" style="color: #b37a18;">$0.00</div>
-            <small style="color: #666; font-size: 9px;">Efectivo + Tarjetas (Neto)</small>
-          </div>
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <h4>Saldo Operativo</h4>
+          <div class="val" id="statSaldoAsignado">$0.00</div>
+          <small style="color: #666; font-size: 9px;">Suma de tiendas</small>
         </div>
-
-        <div class="progress-box">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <b style="font-size: 12px; color: var(--accent-blue);">📊 Nivel de Ejecución de Compras vs Saldo</b>
-            <span id="lblPorcentajeGasto" style="font-weight: bold; font-size: 12px;">0%</span>
-          </div>
-          <div class="progress-bar-container">
-            <div id="barraProgresoFill" class="progress-bar-fill"></div>
-          </div>
+        <div class="stat-card">
+          <h4>Total Compras</h4>
+          <div class="val" id="statTotalCompras" style="color: var(--red-btn);">$0.00</div>
         </div>
+        <div class="stat-card">
+          <h4>Saldo Disponible</h4>
+          <div class="val" id="statSaldoDisponible" style="color: var(--green-corte);">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <h4>Ventas Netas</h4>
+          <div class="val" id="statTotalVentas">$0.00</div>
+        </div>
+      </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div style="background: #f8fafc; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
-            <h4 style="color: var(--green-corte); margin-bottom: 4px; font-size: 11px;">💵 Ventas Efectivo (Gaveta)</h4>
-            <div style="font-size: 18px; font-weight: bold; color: var(--green-corte);" id="lblTotalEfectivoSolo">$0.00</div>
-          </div>
-          <div style="background: #f8fafc; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
-            <h4 style="color: var(--accent-blue); margin-bottom: 4px; font-size: 11px;">💳 Ventas Tarjeta (Neto Banco)</h4>
-            <div style="font-size: 18px; font-weight: bold; color: var(--accent-blue);" id="lblTotalTarjetaNetoSolo">$0.00</div>
-          </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
+        <div style="background: #f8fafc; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+          <h4 style="color: var(--green-corte); margin-bottom: 4px; font-size: 11px;">💵 Ventas Efectivo</h4>
+          <div style="font-size: 20px; font-weight: bold; color: var(--green-corte);" id="lblTotalEfectivoSolo">$0.00</div>
+        </div>
+        <div style="background: #f8fafc; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+          <h4 style="color: var(--accent-blue); margin-bottom: 4px; font-size: 11px;">💳 Ventas Tarjeta</h4>
+          <div style="font-size: 20px; font-weight: bold; color: var(--accent-blue);" id="lblTotalTarjetaNetoSolo">$0.00</div>
         </div>
       </div>
     </section>
 
+    <!-- VISTA 2: COMPRAS -->
     <section id="comprasView" class="section-view">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="color: var(--accent-blue); font-size: 14px;">Control de Compras</h3>
         <button class="btn-pdf" onclick="abrirModalPDF('compras')">📄 Descargar PDF</button>
       </div>
+
+      <div class="form-box" id="boxFormCompra">
+        <form id="formCompra" onsubmit="registrarCompraDirecta(event)">
+          <div class="field-group">
+            <label>Proveedor:</label>
+            <input type="text" id="compraProveedor" required placeholder="Nombre proveedor">
+          </div>
+          <div class="field-group">
+            <label>Monto ($):</label>
+            <input type="number" id="compraMonto" step="0.01" required placeholder="0.00">
+          </div>
+          <div class="field-group">
+            <label>Nº de Factura:</label>
+            <input type="text" id="compraFactura" placeholder="FAC-001">
+          </div>
+          <button type="submit" class="btn-main">✔ Registrar Compra</button>
+        </form>
+      </div>
+
       <div class="table-container">
         <table>
-          <thead><tr id="headTablaCompras"><th>Fecha</th><th>Proveedor</th><th>Factura</th><th>Monto</th></tr></thead>
+          <thead><tr id="headTablaCompras"><th>Fecha</th><th>Proveedor</th><th>Factura</th><th>Monto</th><th>Acción</th></tr></thead>
           <tbody id="tablaComprasBody"></tbody>
         </table>
       </div>
     </section>
 
+    <!-- VISTA 3: AGENDA DE PEDIDOS -->
     <section id="agendaView" class="section-view">
       <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">📅 Agenda de Pedidos</h3>
+      <div class="form-box" id="boxFormAgenda">
+        <form id="formAgenda" onsubmit="agendarPedido(event)">
+          <div class="field-group">
+            <label>Proveedor:</label>
+            <input type="text" id="agProveedor" required placeholder="Proveedor">
+          </div>
+          <div class="field-group">
+            <label>Monto Est. ($):</label>
+            <input type="number" id="agMonto" step="0.01" required placeholder="0.00">
+          </div>
+          <div class="field-group">
+            <label>Fecha:</label>
+            <input type="date" id="agFecha" required>
+          </div>
+          <button type="submit" class="btn-main" style="background: var(--yellow-bar); color: #000;">📌 Agendar Pedido</button>
+        </form>
+      </div>
       <div class="table-container" style="flex: 1;">
         <table>
           <thead><tr id="headTablaAgenda"><th>Fecha</th><th>Proveedor</th><th>Monto</th><th>Estado</th></tr></thead>
@@ -179,64 +228,179 @@
       </div>
     </section>
 
+    <!-- VISTA 4: VENTAS -->
     <section id="ventasView" class="section-view">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="color: var(--accent-blue); font-size: 14px;">Registro de Ventas</h3>
         <button class="btn-pdf" onclick="abrirModalPDF('ventas')">📄 Descargar PDF</button>
       </div>
+
+      <div class="form-box" id="boxFormVenta">
+        <form id="formVenta" onsubmit="registrarVenta(event)">
+          <div class="field-group">
+            <label>Pago:</label>
+            <select id="ventaMetodo">
+              <option value="efectivo">💵 Efectivo</option>
+              <option value="tarjeta">💳 Tarjeta (3.5%)</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Monto ($):</label>
+            <input type="number" id="ventaMonto" step="0.01" required placeholder="0.00">
+          </div>
+          <div class="field-group">
+            <label>Cajero:</label>
+            <select id="ventaCajeroSelect" required></select>
+          </div>
+          <button type="submit" class="btn-main" style="background: #1d528d;">✔ Registrar Venta</button>
+        </form>
+      </div>
+
       <div class="table-container" style="flex: 1;">
         <table>
-          <thead><tr id="headVentasGeneral"><th>Hora</th><th>Tipo</th><th>Monto Neto</th><th>Cajero</th></tr></thead>
+          <thead><tr id="headVentasGeneral"><th>Hora</th><th>Tipo</th><th>Monto Neto</th><th>Cajero</th><th>Acción</th></tr></thead>
           <tbody id="tablaVentasGeneralBody"></tbody>
         </table>
       </div>
     </section>
 
+    <!-- VISTA 5: REPORTE ANALÍTICO POR PROVEEDOR -->
     <section id="reporteProvView" class="section-view">
-      <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">📊 Reporte por Proveedor</h3>
+      <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">📊 Reporte por Proveedor (Rango de Fechas)</h3>
+      
       <div class="form-box">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-          <div class="field-group" style="margin-bottom:0;"><label>Desde:</label><input type="date" id="repProvFechaIni"></div>
-          <div class="field-group" style="margin-bottom:0;"><label>Hasta:</label><input type="date" id="repProvFechaFin"></div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label>Desde:</label>
+            <input type="date" id="repProvFechaIni">
+          </div>
+          <div class="field-group" style="margin-bottom:0;">
+            <label>Hasta:</label>
+            <input type="date" id="repProvFechaFin">
+          </div>
         </div>
+
+        <div class="field-group" style="margin-top: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label style="margin-bottom:0;">Seleccionar Proveedores:</label>
+            <button type="button" onclick="seleccionarTodosProveedores(true)" style="background:none; border:none; color:var(--accent-blue); font-weight:bold; cursor:pointer; font-size:11px;">Marcar Todos</button>
+          </div>
+          <div id="contenedorCheckProveedores" style="background:#fff; border:1px solid #7f9db9; padding:8px; border-radius:5px; max-height: 120px; overflow-y:auto; display:flex; flex-direction:column; gap:4px;"></div>
+        </div>
+
         <div style="display: flex; gap: 8px; margin-top: 10px;">
           <button class="btn-main" style="background: var(--accent-blue);" onclick="generarReporteProveedores()">🔍 Generar Reporte</button>
+          <button class="btn-pdf" onclick="exportarReporteProveedoresPDF()">📄 Guardar PDF</button>
         </div>
       </div>
+
       <div class="table-container" style="flex: 1;">
         <table>
           <thead><tr><th>Fecha / Factura</th><th>Proveedor / Detalle</th><th>Monto</th></tr></thead>
-          <tbody id="tablaReporteProveedoresBody"><tr><td colspan="3">Seleccione rango y genere el reporte.</td></tr></tbody>
+          <tbody id="tablaReporteProveedoresBody">
+            <tr><td colspan="3">Seleccione rango y proveedores para generar reporte.</td></tr>
+          </tbody>
         </table>
       </div>
     </section>
 
+    <!-- VISTA 6: CONFIGURACIÓN -->
     <section id="configView" class="section-view">
       <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">⚙️ Proveedores y Cajeros</h3>
+      
       <div class="form-box">
         <h4 style="color: var(--accent-blue); margin-bottom: 8px;">🚚 Proveedores</h4>
         <div style="display: flex; gap: 5px; margin-bottom: 8px;">
           <input type="text" id="inputNuevoProveedor" placeholder="Nuevo proveedor..." style="flex:1;">
           <button class="btn-main" style="width: auto; padding: 6px 12px;" onclick="agregarProveedorGlobal()">+ Añadir</button>
         </div>
-        <div class="table-container" style="max-height: 140px;">
-          <table><thead><tr><th>Proveedor</th><th>Acción</th></tr></thead><tbody id="tablaConfigProveedoresBody"></tbody></table>
+        <div style="background: #eef2f7; padding: 8px; border-radius: 5px; margin-bottom: 8px;">
+          <label style="font-weight: bold; margin-bottom: 3px; display: block; font-size: 11px;">Subir Excel de Proveedores:</label>
+          <input type="file" id="excelProveedoresInput" accept=".xlsx, .xls" onchange="importarProveedoresExcel(event)">
         </div>
+        <div class="table-container" style="max-height: 140px;">
+          <table>
+            <thead><tr><th>Proveedor</th><th>Acción</th></tr></thead>
+            <tbody id="tablaConfigProveedoresBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="form-box">
+        <h4 style="color: var(--accent-blue); margin-bottom: 8px;">👤 Cajeros</h4>
+        <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+          <input type="text" id="inputNuevoCajero" placeholder="Nuevo cajero..." style="flex:1;">
+          <button class="btn-main" style="background:#1d528d; width: auto; padding: 6px 12px;" onclick="agregarCajeroGlobal()">+ Añadir</button>
+        </div>
+        <div class="table-container" style="max-height: 140px;">
+          <table>
+            <thead><tr><th>Cajero</th><th>Acción</th></tr></thead>
+            <tbody id="tablaConfigCajerosBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 7: HISTORIAL -->
+    <section id="calendarioView" class="section-view">
+      <h3 style="color: var(--accent-blue); font-size: 14px; margin-bottom: 10px;">🗓️ Historial por Fecha</h3>
+      <div class="form-box">
+        <div class="field-group">
+          <label>Fecha:</label>
+          <input type="date" id="calendarioInputFecha" onchange="cargarReporteDiaSeleccionado()">
+        </div>
+        <div class="field-group">
+          <label>Tipo:</label>
+          <select id="calendarioTipoFiltro" onchange="cargarReporteDiaSeleccionado()">
+            <option value="ventas">💰 Ventas</option>
+            <option value="compras">🛒 Compras</option>
+          </select>
+        </div>
+        <div style="background: #eef2f7; padding: 8px; border-radius: 5px; margin-top: 5px;">
+          <b>Total del Día:</b> <span id="lblTotalDiaSeleccionado" style="font-size: 16px; color: var(--accent-blue); font-weight: bold;">$0.00</span>
+        </div>
+      </div>
+      <div class="table-container" style="flex: 1;">
+        <table>
+          <thead id="headCalendarioTabla"><tr><th>Hora</th><th>Detalle</th><th>Monto</th></tr></thead>
+          <tbody id="tablaCalendarioBody"></tbody>
+        </table>
       </div>
     </section>
   </main>
 
+  <!-- BARRA DE NAVEGACIÓN FLOTANTE INFERIOR -->
   <nav class="floating-nav">
-    <button class="nav-btn-app active" id="navResumen" onclick="switchTab('resumenView', this)"><span class="icon">📊</span> Dashboard</button>
+    <button class="nav-btn-app active" id="navResumen" onclick="switchTab('resumenView', this)"><span class="icon">📊</span> Resumen</button>
     <button class="nav-btn-app" id="navCompras" onclick="switchTab('comprasView', this)"><span class="icon">🛒</span> Compras</button>
     <button class="nav-btn-app" id="navAgenda" onclick="switchTab('agendaView', this)"><span class="icon">📅</span> Agenda</button>
     <button class="nav-btn-app" id="navVentas" onclick="switchTab('ventasView', this)"><span class="icon">💰</span> Ventas</button>
     <button class="nav-btn-app" id="navReporteProv" onclick="switchTab('reporteProvView', this)"><span class="icon">📋</span> R.Prov</button>
     <button class="nav-btn-app" id="navConfig" onclick="switchTab('configView', this)"><span class="icon">⚙️</span> Config</button>
+    <button class="nav-btn-app" id="navCalendario" onclick="switchTab('calendarioView', this)"><span class="icon">🗓️</span> Historial</button>
   </nav>
 
+  <!-- MODAL PDF -->
+  <div id="modalPDF" class="modal-overlay">
+    <div class="modal-box">
+      <h3 style="color: var(--accent-blue); margin-bottom: 12px; font-size: 15px;">📄 Descargar Libro en PDF</h3>
+      <div class="field-group">
+        <label>Fecha Inicio:</label>
+        <input type="date" id="pdfFechaInicio">
+      </div>
+      <div class="field-group">
+        <label>Fecha Fin:</label>
+        <input type="date" id="pdfFechaFin">
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 15px; justify-content: flex-end;">
+        <button onclick="cerrarModalPDF()" style="padding: 7px 12px; background: #ccc; border:none; border-radius: 5px; cursor: pointer;">Cancelar</button>
+        <button onclick="generarPDFPorRango()" class="btn-pdf">Generar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ⚙️ TU CONFIGURACIÓN REAL DE FIREBASE
+    // ⚙️ CONFIGURACIÓN REAL DE FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyBNk49StovMVyxQnSmL3qK-5qJyE0cERwc",
       authDomain: "control-multisucursal.firebaseapp.com",
@@ -251,10 +415,12 @@
     const db = firebase.firestore();
 
     let sucursalActual = 'global';
+    let tipoPDFActual = 'ventas';
+    
     let baseDatosGlobal = {
-      corinto: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [] },
-      los_fuentes: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [] },
-      metapan: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [] }
+      corinto: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [], cajeros: [] },
+      los_fuentes: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [], cajeros: [] },
+      metapan: { saldoAsignado: 3500.00, compras: [], ventas: [], agenda: [], proveedores: [], cajeros: [] }
     };
 
     function sincronizarFirebase() {
@@ -263,9 +429,17 @@
           if (doc.exists) {
             baseDatosGlobal[suc] = doc.data();
             actualizarDashboard();
+            if(document.getElementById('agendaView').classList.contains('active')) renderAgenda();
+            if(document.getElementById('configView').classList.contains('active')) renderConfigTab();
+            if(document.getElementById('reporteProvView').classList.contains('active')) renderChecklistProveedores();
+            if(document.getElementById('calendarioView').classList.contains('active')) cargarReporteDiaSeleccionado();
           }
         });
       });
+    }
+
+    function guardarEnNube(suc) {
+      db.collection('sucursales').doc(suc).set(baseDatosGlobal[suc], { merge: true });
     }
 
     function cambiarSucursal(suc) {
@@ -276,9 +450,17 @@
       if(suc === 'los_fuentes') document.getElementById('btnSucFuentes').classList.add('active');
       if(suc === 'metapan') document.getElementById('btnSucMetapan').classList.add('active');
       
-      document.getElementById('btnEditarSaldo').style.display = (suc === 'global') ? 'none' : 'inline-block';
+      let esGlobal = (suc === 'global');
+      if(document.getElementById('boxFormCompra')) document.getElementById('boxFormCompra').style.display = esGlobal ? 'none' : 'block';
+      if(document.getElementById('boxFormAgenda')) document.getElementById('boxFormAgenda').style.display = esGlobal ? 'none' : 'block';
+      if(document.getElementById('boxFormVenta')) document.getElementById('boxFormVenta').style.display = esGlobal ? 'none' : 'block';
+      
+      document.getElementById('btnEditarSaldo').style.display = esGlobal ? 'none' : 'inline-block';
+
       actualizarDashboard();
+      cargarSelectCajerosAdmin();
       if(document.getElementById('configView').classList.contains('active')) renderConfigTab();
+      if(document.getElementById('reporteProvView').classList.contains('active')) renderChecklistProveedores();
     }
 
     function switchTab(tabId, btnElement) {
@@ -286,7 +468,30 @@
       document.querySelectorAll('.nav-btn-app').forEach(t => t.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       if(btnElement) btnElement.classList.add('active');
+
+      if(tabId === 'agendaView') renderAgenda();
       if(tabId === 'configView') renderConfigTab();
+      if(tabId === 'reporteProvView') {
+        let hoy = new Date().toISOString().slice(0, 10);
+        if(!document.getElementById('repProvFechaIni').value) {
+          document.getElementById('repProvFechaIni').value = hoy;
+          document.getElementById('repProvFechaFin').value = hoy;
+        }
+        renderChecklistProveedores();
+      }
+      if(tabId === 'calendarioView') {
+        if(!document.getElementById('calendarioInputFecha').value) {
+          document.getElementById('calendarioInputFecha').value = new Date().toISOString().slice(0, 10);
+        }
+        cargarReporteDiaSeleccionado();
+      }
+    }
+
+    function cargarSelectCajerosAdmin() {
+      if(sucursalActual === 'global') return;
+      let cjs = baseDatosGlobal[sucursalActual].cajeros || [];
+      let sel = document.getElementById('ventaCajeroSelect');
+      sel.innerHTML = cjs.map(c => `<option value="${c}">${c}</option>`).join('') || '<option value="Cajero General">Cajero General</option>';
     }
 
     function editarSaldoAsignado() {
@@ -295,8 +500,422 @@
       let nuevo = prompt(`Ingrese el nuevo saldo para ${sucursalActual.toUpperCase()} ($):`, actual);
       if(nuevo !== null && !isNaN(nuevo)) {
         baseDatosGlobal[sucursalActual].saldoAsignado = parseFloat(nuevo);
-        db.collection('sucursales').doc(sucursalActual).set(baseDatosGlobal[sucursalActual], { merge: true });
+        guardarEnNube(sucursalActual);
       }
+    }
+
+    function renderChecklistProveedores() {
+      let sucursales = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
+      let listaProvs = new Set();
+      sucursales.forEach(s => {
+        (baseDatosGlobal[s].proveedores || []).forEach(p => listaProvs.add(p));
+        (baseDatosGlobal[s].compras || []).forEach(c => { if(c.proveedor) listaProvs.add(c.proveedor); });
+      });
+
+      let container = document.getElementById('contenedorCheckProveedores');
+      let arr = Array.from(listaProvs);
+      if(arr.length === 0) {
+        container.innerHTML = '<span style="color:#777; font-size:11px;">No hay proveedores registrados.</span>';
+        return;
+      }
+
+      container.innerHTML = arr.map(p => `
+        <label style="display:flex; align-items:center; gap:6px; font-weight:normal; cursor:pointer;">
+          <input type="checkbox" class="check-prov" value="${p}" checked> ${p}
+        </label>
+      `).join('');
+    }
+
+    function seleccionarTodosProveedores(estado) {
+      document.querySelectorAll('.check-prov').forEach(chk => chk.checked = estado);
+    }
+
+    function generarReporteProveedores() {
+      let fIni = document.getElementById('repProvFechaIni').value;
+      let fFin = document.getElementById('repProvFechaFin').value;
+      let checkboxes = document.querySelectorAll('.check-prov:checked');
+      let provsSeleccionados = Array.from(checkboxes).map(chk => chk.value);
+
+      if(!fIni || !fFin) { alert("Seleccione un rango de fechas."); return; }
+      if(provsSeleccionados.length === 0) { alert("Seleccione al menos un proveedor."); return; }
+
+      let sucursales = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
+      let comprasFiltradas = [];
+
+      sucursales.forEach(s => {
+        (baseDatosGlobal[s].compras || []).forEach(c => {
+          let dia = c.fecha ? c.fecha.slice(0, 10) : '';
+          if(dia >= fIni && dia <= fFin && provsSeleccionados.includes(c.proveedor)) {
+            comprasFiltradas.push({...c, sucursal: s});
+          }
+        });
+      });
+
+      comprasFiltradas.sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+
+      let tbody = document.getElementById('tablaReporteProveedoresBody');
+      if(comprasFiltradas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3">No se encontraron compras en este rango para los proveedores seleccionados.</td></tr>';
+        return;
+      }
+
+      let sumaGlobal = 0;
+      let html = '';
+      let agrupadoPorProv = {};
+      comprasFiltradas.forEach(c => {
+        if(!agrupadoPorProv[c.proveedor]) agrupadoPorProv[c.proveedor] = [];
+        agrupadoPorProv[c.proveedor].push(c);
+      });
+
+      for(let prov in agrupadoPorProv) {
+        let subtotalProv = 0;
+        html += `<tr style="background:#eef2f7;"><td colspan="3"><b>🚚 Proveedor: ${prov}</b></td></tr>`;
+        
+        agrupadoPorProv[prov].forEach(c => {
+          subtotalProv += (c.monto || 0);
+          sumaGlobal += (c.monto || 0);
+          html += `
+            <tr>
+              <td style="padding-left:15px;">${c.fecha ? c.fecha.slice(0,10) : ''} <small>(${c.factura||'N/A'})</small> ${sucursalActual==='global'?'<b style="color:var(--accent-blue);">['+c.sucursal.toUpperCase()+']</b>':''}</td>
+              <td>${c.proveedor}</td>
+              <td style="color:red; font-weight:bold;">$${(c.monto || 0).toFixed(2)}</td>
+            </tr>
+          `;
+        });
+        html += `<tr style="background:#f8fafc; border-bottom:2px solid #cbd3df;"><td colspan="2" style="text-align:right;"><b>Subtotal ${prov}:</b></td><td style="color:red; font-weight:bold;">$${subtotalProv.toFixed(2)}</td></tr>`;
+      }
+
+      html += `<tr style="background:#e6ebf2;"><td colspan="2" style="text-align:right; font-size:14px;"><b>SUMA GLOBAL SELECCIONADA:</b></td><td style="color:red; font-weight:bold; font-size:14px;">$${sumaGlobal.toFixed(2)}</td></tr>`;
+      tbody.innerHTML = html;
+    }
+
+    function exportarReporteProveedoresPDF() {
+      let fIni = document.getElementById('repProvFechaIni').value;
+      let fFin = document.getElementById('repProvFechaFin').value;
+      let checkboxes = document.querySelectorAll('.check-prov:checked');
+      let provsSeleccionados = Array.from(checkboxes).map(chk => chk.value);
+
+      if(provsSeleccionados.length === 0) { alert("Seleccione proveedores para exportar."); return; }
+
+      let sucursales = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
+      let comprasFiltradas = [];
+
+      sucursales.forEach(s => {
+        (baseDatosGlobal[s].compras || []).forEach(c => {
+          let dia = c.fecha ? c.fecha.slice(0, 10) : '';
+          if(dia >= fIni && dia <= fFin && provsSeleccionados.includes(c.proveedor)) {
+            comprasFiltradas.push({...c, sucursal: s});
+          }
+        });
+      });
+
+      if(comprasFiltradas.length === 0) { alert("No hay datos para exportar."); return; }
+
+      let contenidoHTML = `
+        <div style="padding: 15px; font-family: Arial; color: #111;">
+          <h2 style="text-align: center; color: #1e3a5f;">SUPER TOÑITA</h2>
+          <h3 style="text-align: center; margin-bottom: 5px;">REPORTE ANALÍTICO POR PROVEEDOR</h3>
+          <p style="text-align: center; font-size: 10px; color: #555; margin-bottom: 15px;">Periodo: ${fIni} al ${fFin} | Sucursal: ${sucursalActual.toUpperCase()}</p>
+          <hr style="border: 1px solid #ddd; margin-bottom: 10px;">
+          <table style="width:100%; border-collapse:collapse; font-size:10px;">
+            <thead>
+              <tr style="background:#eee;">
+                <th style="padding:5px; text-align:left;">Fecha / Factura</th>
+                <th style="padding:5px; text-align:left;">Proveedor</th>
+                <th style="padding:5px; text-align:right;">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      let agrupado = {};
+      comprasFiltradas.forEach(c => {
+        if(!agrupado[c.proveedor]) agrupado[c.proveedor] = [];
+        agrupado[c.proveedor].push(c);
+      });
+
+      let sumaGlobal = 0;
+      for(let prov in agrupado) {
+        let sub = 0;
+        contenidoHTML += `<tr style="background:#f4f6f9;"><td colspan="3" style="padding:5px; font-weight:bold;">Proveedor: ${prov}</td></tr>`;
+        agrupado[prov].forEach(c => {
+          sub += (c.monto || 0);
+          sumaGlobal += (c.monto || 0);
+          contenidoHTML += `
+            <tr>
+              <td style="padding:5px; padding-left:12px;">${c.fecha ? c.fecha.slice(0,10) : ''} (${c.factura||'N/A'})</td>
+              <td style="padding:5px;">${c.proveedor}</td>
+              <td style="padding:5px; text-align:right; color:red; font-weight:bold;">$${(c.monto || 0).toFixed(2)}</td>
+            </tr>
+          `;
+        });
+        contenidoHTML += `<tr style="border-bottom:1px solid #ccc;"><td colspan="2" style="padding:5px; text-align:right; font-weight:bold;">Subtotal ${prov}:</td><td style="padding:5px; text-align:right; font-weight:bold; color:red;">$${sub.toFixed(2)}</td></tr>`;
+      }
+
+      contenidoHTML += `
+            </tbody>
+          </table>
+          <div style="margin-top: 15px; text-align: right; font-size: 13px; font-weight: bold;">
+            SUMA GLOBAL SELECCIONADA: $${sumaGlobal.toFixed(2)}
+          </div>
+        </div>
+      `;
+
+      html2pdf().from(contenidoHTML).save(`Reporte_Proveedores_${fIni}_al_${fFin}.pdf`);
+    }
+
+    function registrarCompraDirecta(e) {
+      e.preventDefault();
+      if(sucursalActual === 'global') return;
+      const proveedor = document.getElementById('compraProveedor').value.trim();
+      const monto = parseFloat(document.getElementById('compraMonto').value) || 0;
+      const factura = document.getElementById('compraFactura').value.trim();
+
+      const nuevaCompra = { id: Date.now(), fecha: new Date().toISOString(), proveedor, monto, factura };
+      if(!baseDatosGlobal[sucursalActual].compras) baseDatosGlobal[sucursalActual].compras = [];
+      baseDatosGlobal[sucursalActual].compras.unshift(nuevaCompra);
+      guardarEnNube(sucursalActual);
+      document.getElementById('formCompra').reset();
+      alert("¡Compra registrada y sincronizada!");
+    }
+
+    function editarCompra(id, sucOrigen) {
+      let comps = baseDatosGlobal[sucOrigen].compras || [];
+      let comp = comps.find(c => c.id === id);
+      if(!comp) return;
+
+      let nuevoProv = prompt("Editar Proveedor:", comp.proveedor);
+      if(nuevoProv === null) return;
+      let nuevoMonto = prompt("Editar Monto ($):", comp.monto);
+      if(nuevoMonto === null || isNaN(nuevoMonto)) return;
+      let nuevaFac = prompt("Editar Nº Factura:", comp.factura || "");
+      if(nuevaFac === null) return;
+
+      comp.proveedor = nuevoProv.trim();
+      comp.monto = parseFloat(nuevoMonto);
+      comp.factura = nuevaFac.trim();
+      guardarEnNube(sucOrigen);
+      alert("¡Compra actualizada!");
+    }
+
+    function eliminarCompra(id, sucOrigen) {
+      if(confirm("¿Seguro que deseas eliminar esta compra?")) {
+        baseDatosGlobal[sucOrigen].compras = baseDatosGlobal[sucOrigen].compras.filter(c => c.id !== id);
+        guardarEnNube(sucOrigen);
+      }
+    }
+
+    function registrarVenta(e) {
+      e.preventDefault();
+      if(sucursalActual === 'global') return;
+      const metodo = document.getElementById('ventaMetodo').value;
+      const monto = parseFloat(document.getElementById('ventaMonto').value) || 0;
+      const cajero = document.getElementById('ventaCajeroSelect').value;
+
+      const comision = metodo === 'tarjeta' ? (monto * 0.035) : 0;
+      const neto = monto - comision;
+
+      const nuevaVenta = { id: Date.now(), fecha: new Date().toISOString(), metodoPago: metodo, total: monto, comisionTarjeta: comision, montoNeto: neto, cajero };
+      if(!baseDatosGlobal[sucursalActual].ventas) baseDatosGlobal[sucursalActual].ventas = [];
+      baseDatosGlobal[sucursalActual].ventas.unshift(nuevaVenta);
+      guardarEnNube(sucursalActual);
+      document.getElementById('formVenta').reset();
+      alert("¡Venta registrada y sincronizada!");
+    }
+
+    function editarVenta(id, sucOrigen) {
+      let vts = baseDatosGlobal[sucOrigen].ventas || [];
+      let vt = vts.find(v => v.id === id);
+      if(!vt) return;
+
+      let nuevoMonto = prompt("Editar Monto Total ($):", vt.total);
+      if(nuevoMonto === null || isNaN(nuevoMonto)) return;
+
+      let totalNum = parseFloat(nuevoMonto);
+      let comision = vt.metodoPago === 'tarjeta' ? (totalNum * 0.035) : 0;
+      
+      vt.total = totalNum;
+      vt.comisionTarjeta = comision;
+      vt.montoNeto = totalNum - comision;
+      guardarEnNube(sucOrigen);
+      alert("¡Venta actualizada!");
+    }
+
+    function eliminarVenta(id, sucOrigen) {
+      if(confirm("¿Seguro que deseas eliminar esta venta?")) {
+        baseDatosGlobal[sucOrigen].ventas = baseDatosGlobal[sucOrigen].ventas.filter(v => v.id !== id);
+        guardarEnNube(sucOrigen);
+      }
+    }
+
+    function agendarPedido(e) {
+      e.preventDefault();
+      if(sucursalActual === 'global') return;
+      const proveedor = document.getElementById('agProveedor').value.trim();
+      const monto = parseFloat(document.getElementById('agMonto').value) || 0;
+      const fecha = document.getElementById('agFecha').value;
+
+      const nuevoPedido = { id: Date.now(), proveedor, monto, fechaProg: fecha, estado: 'pendiente' };
+      if(!baseDatosGlobal[sucursalActual].agenda) baseDatosGlobal[sucursalActual].agenda = [];
+      baseDatosGlobal[sucursalActual].agenda.push(nuevoPedido);
+      guardarEnNube(sucursalActual);
+      document.getElementById('formAgenda').reset();
+      alert("¡Pedido agendado!");
+    }
+
+    function renderAgenda() {
+      let sucursales = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
+      let todos = [];
+      sucursales.forEach(s => {
+        (baseDatosGlobal[s].agenda || []).forEach(p => todos.push({...p, sucursal: s}));
+      });
+      const tbody = document.getElementById('tablaAgendaBody');
+      tbody.innerHTML = todos.map(p => `
+        <tr>
+          <td><b>${p.fechaProg || ''}</b></td>
+          <td>${p.proveedor}</td>
+          <td style="color:var(--accent-blue);">$${(p.monto || 0).toFixed(2)}</td>
+          <td>${p.estado || 'pendiente'}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="4">Sin agenda.</td></tr>';
+    }
+
+    function importarProveedoresExcel(e) {
+      if(sucursalActual === 'global') {
+        alert("Selecciona una sucursal específica.");
+        e.target.value = '';
+        return;
+      }
+      let archivo = e.target.files[0];
+      if(!archivo) return;
+      let reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          let data = new Uint8Array(evt.target.result);
+          let workbook = XLSX.read(data, {type: 'array'});
+          let sheet = workbook.Sheets[workbook.SheetNames[0]];
+          let json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+
+          if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
+          let count = 0;
+          json.forEach(row => {
+            if(row[0]) {
+              let p = String(row[0]).trim();
+              if(p && !baseDatosGlobal[sucursalActual].proveedores.includes(p)) {
+                baseDatosGlobal[sucursalActual].proveedores.push(p);
+                count++;
+              }
+            }
+          });
+          guardarEnNube(sucursalActual);
+          alert(`¡${count} proveedores importados a ${sucursalActual.toUpperCase()}!`);
+          e.target.value = '';
+        } catch(err) {
+          alert("Error al leer el archivo Excel.");
+          e.target.value = '';
+        }
+      };
+      reader.readAsArrayBuffer(archivo);
+    }
+
+    function abrirModalPDF(tipo) {
+      tipoPDFActual = tipo;
+      let hoy = new Date().toISOString().slice(0, 10);
+      document.getElementById('pdfFechaInicio').value = hoy;
+      document.getElementById('pdfFechaFin').value = hoy;
+      document.getElementById('modalPDF').style.display = 'flex';
+    }
+
+    function cerrarModalPDF() {
+      document.getElementById('modalPDF').style.display = 'none';
+    }
+
+    function generarPDFPorRango() {
+      let fIni = document.getElementById('pdfFechaInicio').value;
+      let fFin = document.getElementById('pdfFechaFin').value;
+      cerrarModalPDF();
+
+      let sucursales = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
+      let tituloTienda = sucursalActual === 'global' ? 'TODAS LAS SUCURSALES (GLOBAL)' : sucursalActual.toUpperCase();
+
+      let contenidoHTML = `
+        <div style="padding: 15px; font-family: Arial; color: #111;">
+          <h2 style="text-align: center; color: #1e3a5f;">SUPER TOÑITA</h2>
+          <h3 style="text-align: center; margin-bottom: 5px;">LIBRO DE ${tipoPDFActual.toUpperCase()} - ${tituloTienda}</h3>
+          <p style="text-align: center; font-size: 10px; color: #555; margin-bottom: 15px;">Periodo: ${fIni} al ${fFin}</p>
+          <hr style="border: 1px solid #ddd; margin-bottom: 10px;">
+      `;
+
+      if(tipoPDFActual === 'compras') {
+        let total = 0;
+        contenidoHTML += `<table style="width:100%; border-collapse:collapse; font-size:10px;"><thead><tr style="background:#eee;"><th style="padding:4px;">Fecha</th><th style="padding:4px;">Suc</th><th style="padding:4px;">Proveedor</th><th style="padding:4px;">Factura</th><th style="padding:4px; text-align:right;">Monto</th></tr></thead><tbody>`;
+        sucursales.forEach(s => {
+          (baseDatosGlobal[s].compras || []).forEach(c => {
+            let dia = c.fecha ? c.fecha.slice(0, 10) : '';
+            if(dia >= fIni && dia <= fFin) {
+              total += (c.monto || 0);
+              contenidoHTML += `<tr><td style="padding:4px;">${dia}</td><td style="padding:4px; text-transform:uppercase;">${s}</td><td style="padding:4px;">${c.proveedor}</td><td style="padding:4px;">${c.factura||'N/A'}</td><td style="padding:4px; text-align:right; color:red; font-weight:bold;">$${(c.monto || 0).toFixed(2)}</td></tr>`;
+            }
+          });
+        });
+        contenidoHTML += `</tbody></table><div style="margin-top:10px; text-align:right; font-weight:bold; font-size:12px;">Total Compras: $${total.toFixed(2)}</div>`;
+      } else {
+        let total = 0;
+        contenidoHTML += `<table style="width:100%; border-collapse:collapse; font-size:10px;"><thead><tr style="background:#eee;"><th style="padding:4px;">Fecha</th><th style="padding:4px;">Suc</th><th style="padding:4px;">Método</th><th style="padding:4px;">Recibido Por</th><th style="padding:4px; text-align:right;">Neto</th></tr></thead><tbody>`;
+        sucursales.forEach(s => {
+          (baseDatosGlobal[s].ventas || []).forEach(v => {
+            let dia = v.fecha ? v.fecha.slice(0, 10) : '';
+            if(dia >= fIni && dia <= fFin) {
+              let neto = v.metodoPago === 'tarjeta' ? (v.montoNeto || 0) : (v.total || 0);
+              total += neto;
+              contenidoHTML += `<tr><td style="padding:4px;">${dia}</td><td style="padding:4px; text-transform:uppercase;">${s}</td><td style="padding:4px;">${(v.metodoPago || '').toUpperCase()}</td><td style="padding:4px;">${v.cajero || ''}</td><td style="padding:4px; text-align:right; color:green; font-weight:bold;">$${neto.toFixed(2)}</td></tr>`;
+            }
+          });
+        });
+        contenidoHTML += `</tbody></table><div style="margin-top:10px; text-align:right; font-weight:bold; font-size:12px;">Total Ventas Netas: $${total.toFixed(2)}</div>`;
+      }
+      contenidoHTML += `</div>`;
+
+      html2pdf().from(contenidoHTML).save(`Libro_${tipoPDFActual}_${fIni}_al_${fFin}.pdf`);
+    }
+
+    function renderConfigTab() {
+      if(sucursalActual === 'global') {
+        document.getElementById('tablaConfigProveedoresBody').innerHTML = '<tr><td colspan="2">Selecciona una sucursal.</td></tr>';
+        document.getElementById('tablaConfigCajerosBody').innerHTML = '<tr><td colspan="2">Selecciona una sucursal.</td></tr>';
+        return;
+      }
+      let provs = baseDatosGlobal[sucursalActual].proveedores || [];
+      let cjs = baseDatosGlobal[sucursalActual].cajeros || [];
+
+      document.getElementById('tablaConfigProveedoresBody').innerHTML = provs.map((p, i) => `
+        <tr><td><b>${p}</b></td><td><button onclick="baseDatosGlobal['${sucursalActual}'].proveedores.splice(${i},1); guardarEnNube('${sucursalActual}');" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td></tr>
+      `).join('') || '<tr><td colspan="2">Sin proveedores.</td></tr>';
+
+      document.getElementById('tablaConfigCajerosBody').innerHTML = cjs.map((c, i) => `
+        <tr><td><b>${c}</b></td><td><button onclick="baseDatosGlobal['${sucursalActual}'].cajeros.splice(${i},1); guardarEnNube('${sucursalActual}');" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td></tr>
+      `).join('') || '<tr><td colspan="2">Sin cajeros.</td></tr>';
+    }
+
+    function agregarProveedorGlobal() {
+      if(sucursalActual === 'global') return;
+      let val = document.getElementById('inputNuevoProveedor').value.trim();
+      if(!val) return;
+      if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
+      baseDatosGlobal[sucursalActual].proveedores.push(val);
+      document.getElementById('inputNuevoProveedor').value = '';
+      guardarEnNube(sucursalActual);
+    }
+
+    function agregarCajeroGlobal() {
+      if(sucursalActual === 'global') return;
+      let val = document.getElementById('inputNuevoCajero').value.trim();
+      if(!val) return;
+      if(!baseDatosGlobal[sucursalActual].cajeros) baseDatosGlobal[sucursalActual].cajeros = [];
+      baseDatosGlobal[sucursalActual].cajeros.push(val);
+      document.getElementById('inputNuevoCajero').value = '';
+      guardarEnNube(sucursalActual);
+      cargarSelectCajerosAdmin();
     }
 
     function actualizarDashboard() {
@@ -318,54 +937,67 @@
         });
       });
 
-      let saldoDisp = tSaldo - tComp;
-      let porcentaje = tSaldo > 0 ? Math.min(100, Math.round((tComp / tSaldo) * 100)) : 0;
-
       document.getElementById('lblSucursalActualTitulo').innerText = sucursalActual === 'global' ? 'GLOBAL CONSOLIDADO' : sucursalActual.replace('_', ' ');
       document.getElementById('statSaldoAsignado').innerText = `$${tSaldo.toFixed(2)}`;
       document.getElementById('statTotalCompras').innerText = `$${tComp.toFixed(2)}`;
-      document.getElementById('statSaldoDisponible').innerText = `$${saldoDisp.toFixed(2)}`;
+      document.getElementById('statSaldoDisponible').innerText = `$${(tSaldo - tComp).toFixed(2)}`;
       document.getElementById('statTotalVentas').innerText = `$${(tEfec + tTarj).toFixed(2)}`;
       document.getElementById('lblTotalEfectivoSolo').innerText = `$${tEfec.toFixed(2)}`;
       document.getElementById('lblTotalTarjetaNetoSolo').innerText = `$${tTarj.toFixed(2)}`;
 
-      document.getElementById('lblPorcentajeGasto').innerText = `${porcentaje}%`;
-      document.getElementById('barraProgresoFill').style.width = `${porcentaje}%`;
-
+      let headC = document.getElementById('headTablaCompras');
+      headC.innerHTML = sucursalActual === 'global' ? `<th>Fecha</th><th>Sucursal</th><th>Proveedor</th><th>Factura</th><th>Monto</th>` : `<th>Fecha</th><th>Proveedor</th><th>Factura</th><th>Monto</th><th>Acción</th>`;
+      
       document.getElementById('tablaComprasBody').innerHTML = compsList.map(c => `
-        <tr><td>${c.fecha ? c.fecha.slice(0,10) : ''}</td>${sucursalActual === 'global' ? `<td><b>${c.sucursal.toUpperCase()}</b></td>` : ''}<td><b>${c.proveedor}</b></td><td>${c.factura||'N/A'}</td><td style="color:red; font-weight:bold;">$${(c.monto||0).toFixed(2)}</td></tr>
-      `).join('') || '<tr><td colspan="5">Sin compras.</td></tr>';
+        <tr>
+          <td>${c.fecha ? c.fecha.slice(0,10) : ''}</td>
+          ${sucursalActual === 'global' ? `<td style="text-transform:uppercase; font-weight:bold;">${c.sucursal}</td>` : ''}
+          <td><b>${c.proveedor}</b></td>
+          <td>${c.factura||'N/A'}</td>
+          <td style="color:red; font-weight:bold;">$${(c.monto || 0).toFixed(2)}</td>
+          ${sucursalActual !== 'global' ? `<td><button onclick="editarCompra(${c.id}, '${c.sucursal}')" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button> <button onclick="eliminarCompra(${c.id}, '${c.sucursal}')" style="background:none; border:none; cursor:pointer;" title="Eliminar">🗑️</button></td>` : ''}
+        </tr>
+      `).join('') || '<tr><td colspan="6">Sin compras.</td></tr>';
+
+      let headV = document.getElementById('headVentasGeneral');
+      headV.innerHTML = sucursalActual === 'global' ? `<th>Hora</th><th>Sucursal</th><th>Tipo</th><th>Monto Neto</th><th>Cajero</th>` : `<th>Hora</th><th>Tipo</th><th>Monto Neto</th><th>Cajero</th><th>Acción</th>`;
 
       document.getElementById('tablaVentasGeneralBody').innerHTML = ventasList.map(v => `
-        <tr><td>${v.fecha ? new Date(v.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</td>${sucursalActual === 'global' ? `<td><b>${v.sucursal.toUpperCase()}</b></td>` : ''}<td><b>${(v.metodoPago||'').toUpperCase()}</b></td><td style="color:green; font-weight:bold;">$${((v.metodoPago==='tarjeta'?v.montoNeto:v.total)||0).toFixed(2)}</td><td>${v.cajero||'Cajero'}</td></tr>
-      `).join('') || '<tr><td colspan="5">Sin ventas.</td></tr>';
+        <tr>
+          <td>${v.fecha ? new Date(v.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</td>
+          ${sucursalActual === 'global' ? `<td style="text-transform:uppercase; font-weight:bold;">${v.sucursal}</td>` : ''}
+          <td><b>${(v.metodoPago || '').toUpperCase()}</b></td>
+          <td style="color:green; font-weight:bold;">$${((v.metodoPago==='tarjeta'?v.montoNeto:v.total) || 0).toFixed(2)}</td>
+          <td>${v.cajero || ''}</td>
+          ${sucursalActual !== 'global' ? `<td><button onclick="editarVenta(${v.id}, '${v.sucursal}')" style="background:none; border:none; cursor:pointer;" title="Editar">✏️</button> <button onclick="eliminarVenta(${v.id}, '${v.sucursal}')" style="background:none; border:none; cursor:pointer;" title="Eliminar">🗑️</button></td>` : ''}
+        </tr>
+      `).join('') || '<tr><td colspan="6">Sin ventas.</td></tr>';
     }
 
-    function renderConfigTab() {
-      if(sucursalActual === 'global') {
-        document.getElementById('tablaConfigProveedoresBody').innerHTML = '<tr><td colspan="2">Selecciona una sucursal específica.</td></tr>';
-        return;
-      }
-      let provs = baseDatosGlobal[sucursalActual].proveedores || [];
-      document.getElementById('tablaConfigProveedoresBody').innerHTML = provs.map((p, i) => `
-        <tr><td><b>${p}</b></td><td><button onclick="eliminarProveedor(${i})" style="color:red; border:none; background:none; cursor:pointer;">🗑️</button></td></tr>
-      `).join('') || '<tr><td colspan="2">Sin proveedores.</td></tr>';
-    }
+    function cargarReporteDiaSeleccionado() {
+      let fechaSel = document.getElementById('calendarioInputFecha').value;
+      let tipo = document.getElementById('calendarioTipoFiltro').value;
+      let sucursales = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
+      let filtrados = [];
 
-    function agregarProveedorGlobal() {
-      if(sucursalActual === 'global') return;
-      let val = document.getElementById('inputNuevoProveedor').value.trim();
-      if(!val) return;
-      if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
-      baseDatosGlobal[sucursalActual].proveedores.push(val);
-      document.getElementById('inputNuevoProveedor').value = '';
-      db.collection('sucursales').doc(sucursalActual).set(baseDatosGlobal[sucursalActual], { merge: true });
-    }
+      sucursales.forEach(s => {
+        if(tipo === 'ventas') {
+          (baseDatosGlobal[s].ventas || []).filter(v => v.fecha && v.fecha.startsWith(fechaSel)).forEach(v => filtrados.push({...v, sucursal: s}));
+        } else {
+          (baseDatosGlobal[s].compras || []).filter(c => c.fecha && c.fecha.startsWith(fechaSel)).forEach(c => filtrados.push({...c, sucursal: s}));
+        }
+      });
 
-    function eliminarProveedor(i) {
-      if(sucursalActual === 'global') return;
-      baseDatosGlobal[sucursalActual].proveedores.splice(i, 1);
-      db.collection('sucursales').doc(sucursalActual).set(baseDatosGlobal[sucursalActual], { merge: true });
+      let suma = filtrados.reduce((a, b) => a + (tipo === 'ventas' ? (b.metodoPago === 'tarjeta' ? (b.montoNeto || 0) : (b.total || 0)) : (b.monto || 0)), 0);
+      document.getElementById('lblTotalDiaSeleccionado').innerText = `$${suma.toFixed(2)}`;
+
+      document.getElementById('tablaCalendarioBody').innerHTML = filtrados.map(item => `
+        <tr>
+          <td>${item.fecha ? new Date(item.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</td>
+          <td><b>${tipo === 'ventas' ? (item.metodoPago || '').toUpperCase() + ' (' + (item.cajero || '') + ')' : item.proveedor}</b></td>
+          <td style="color:${tipo === 'ventas'?'green':'red'}; font-weight:bold;">$${(tipo === 'ventas' ? (item.metodoPago === 'tarjeta' ? (item.montoNeto || 0) : (item.total || 0)) : (item.monto || 0)).toFixed(2)}</td>
+        </tr>
+      `).join('') || `<tr><td colspan="3">Sin registros el ${fechaSel}.</td></tr>`;
     }
 
     window.addEventListener('DOMContentLoaded', () => {
