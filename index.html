@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Super Toñita - Panel Gerencial</title>
+  <title>Super Toñita - Panel Gerencial Pro</title>
 
   <!-- PWA & Web App Manifest via Data URI para icono en Pantalla de Inicio -->
   <link rel="manifest" href="data:application/manifest+json;utf8,%7B%22name%22%3A%22Super%20To%C3%B1ita%20Gerencia%22%2C%22short_name%22%3A%22SuperTo%C3%B1ita%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23F4F5F7%22%2C%22theme_color%22%3A%22%23121316%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%23svgView(viewBox(0%200%20512%20512))%253Csvg%2520xmlns%253D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%2520width%253D%2522512%2522%2520height%253D%2522512%2522%253E%253Crect%2520width%253D%2522512%2522%2520height%253D%2522512%2522%2520rx%253D%2522110%2522%2520fill%253D%2522%2523121316%2522%252F%253E%253Cpath%2520d%253D%2522M160%2520190%2520h192%2520l-16%2520200%2520H176%2520Z%2522%2520fill%253D%2522none%2522%2520stroke%253D%2522%2523D99A27%2522%2520stroke-width%253D%252224%2522%2520stroke-linejoin%253D%2522round%2522%252F%253E%253Cpath%2520d%253D%2522M200%2520190%2520V140%2520a56%252056%25200%25200%25201%2520112%25200%2520v50%2522%2520fill%253D%2522none%2522%2520stroke%253D%2522%2523D99A27%2522%2520stroke-width%253D%252224%2522%2520stroke-linecap%253D%2522round%2522%252F%253E%253Ccircle%2520cx%253D%2522256%2522%2520cy%253D%2522290%2522%2520r%253D%252228%2522%2520fill%253D%2522%252328A745%2522%252F%253E%253C%252Fsvg%2522%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
@@ -13,8 +13,9 @@
   <meta name="apple-mobile-web-app-title" content="SuperToñita">
   <meta name="theme-color" content="#F4F5F7">
 
-  <!-- Icono directo para Apple / iOS -->
-  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><rect width='180' height='180' rx='40' fill='%23121316'/><path d='M50 70 h80 l-8 75 H58 Z' fill='none' stroke='%23D99A27' stroke-width='9' stroke-linejoin='round'/><path d='M70 70 V50 a20 20 0 0 1 40 0 v20' fill='none' stroke='%23D99A27' stroke-width='9' stroke-linecap='round'/><circle cx='90' cy='105' r='10' fill='%2328A745'/></svg>">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <!-- Librerías de exportación e importación -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -500,7 +501,7 @@
     <!-- HEADER SUPERIOR -->
     <header class="app-header">
       <div class="user-greeting">
-        <p>Panel Gerencial</p>
+        <p>Panel Gerencial Pro</p>
         <h1>Super Toñita</h1>
       </div>
       
@@ -530,25 +531,25 @@
         <div class="card-actions-grid">
           <div>
             <button class="action-circle-btn" onclick="modalModificarSaldo()">
-              <span class="icon">🟥</span>
+              <span class="icon">✏️</span>
             </button>
             <div class="action-btn-lbl">Saldo</div>
           </div>
           <div>
             <button class="action-circle-btn" onclick="iniciarNuevaSemana()">
-              <span class="icon">🟥</span>
+              <span class="icon">🔄</span>
             </button>
             <div class="action-btn-lbl">Corte</div>
           </div>
           <div>
             <button class="action-circle-btn" onclick="abrirModalPDF()">
-              <span class="icon">🟨</span>
+              <span class="icon">📄</span>
             </button>
             <div class="action-btn-lbl">PDF</div>
           </div>
           <div>
             <button class="action-circle-btn" onclick="switchTab('secReportes')">
-              <span class="icon">⬜</span>
+              <span class="icon">📊</span>
             </button>
             <div class="action-btn-lbl">R.Prov</div>
           </div>
@@ -567,7 +568,7 @@
       <!-- Tarjeta 1: Control de Compras / Presupuesto (Goal Card Style) -->
       <div class="white-card">
         <div class="goal-card-header">
-          <div class="goal-icon-box" style="background:#FEE2E2; color:#EF4444;"></div>
+          <div class="goal-icon-box" style="background:#FEE2E2; color:#EF4444;">🛒</div>
           <div class="goal-info">
             <h4>Total Compras Realizadas</h4>
             <p id="lblSubComprasCount">0 compras en periodo</p>
@@ -587,7 +588,7 @@
       <!-- Tarjeta 2: Saldo Disponible -->
       <div class="white-card">
         <div class="goal-card-header">
-          <div class="goal-icon-box" style="background:#DCFCE7; color:#16A34A;"></div>
+          <div class="goal-icon-box" style="background:#DCFCE7; color:#16A34A;">💵</div>
           <div class="goal-info">
             <h4>Saldo Restante Operativo</h4>
             <p>Remanente para gastos de caja</p>
@@ -606,7 +607,7 @@
       <!-- Tarjeta 3: Ventas Netas Totales -->
       <div class="white-card">
         <div class="goal-card-header">
-          <div class="goal-icon-box" style="background:#FEF3C7; color:#D97706;"></div>
+          <div class="goal-icon-box" style="background:#FEF3C7; color:#D97706;">💰</div>
           <div class="goal-info">
             <h4>Ingresos Totales (Neto)</h4>
             <p>Suma de Efectivo + Tarjeta Neto</p>
@@ -639,9 +640,7 @@
           </div>
         </div>
 
-        <div class="chart-container" id="chartBarrasSemanales">
-          <!-- Generado dinámicamente -->
-        </div>
+        <div class="chart-container" id="chartBarrasSemanales"></div>
       </div>
 
     </div>
@@ -913,11 +912,39 @@
   <script>
     let sucursalActual = 'global';
 
-    let dbGlobal = JSON.parse(localStorage.getItem('super_tonita_gerencia_v12') || JSON.stringify({
+    // Configuración de Firebase para conectar con las sucursales
+    const firebaseConfig = {
+      apiKey: "AIzaSyBNk49StovMVyxQnSmL3qK-5qJyE0cERwc",
+      authDomain: "control-multisucursal.firebaseapp.com",
+      projectId: "control-multisucursal",
+      storageBucket: "control-multisucursal.firebasestorage.app",
+      messagingSenderId: "103293123018",
+      appId: "1:103293123018:web:c38e9fac24287cc4ed7733",
+      measurementId: "G-3PQZ8DBSW2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let baseDatosGlobal = {
       corinto: { saldoAsignado: 3500.00, inicioSemana: '', compras: [], ventas: [], agenda: [], proveedores: ["Distribuidora La Toñita", "Lácteos San Carlos"], cajeros: ["Francisco", "María"] },
       los_fuentes: { saldoAsignado: 3500.00, inicioSemana: '', compras: [], ventas: [], agenda: [], proveedores: ["Distribuidora La Toñita", "Carnes El Progreso"], cajeros: ["Carlos", "Ana"] },
       metapan: { saldoAsignado: 3500.00, inicioSemana: '', compras: [], ventas: [], agenda: [], proveedores: ["Distribuidora La Toñita", "Lácteos Frontera"], cajeros: ["José", "Elena"] }
-    }));
+    };
+
+    // Sincronización en tiempo real con Firestore para las 3 sucursales
+    ['corinto', 'los_fuentes', 'metapan'].forEach(suc => {
+      db.collection('sucursales').doc(suc).onSnapshot(doc => {
+        if (doc.exists) {
+          baseDatosGlobal[suc] = doc.data();
+          actualizarTodo();
+        }
+      });
+    });
+
+    function guardarEnNube(suc) {
+      db.collection('sucursales').doc(suc).set(baseDatosGlobal[suc], { merge: true });
+    }
 
     function cambiarSucursal(suc) {
       sucursalActual = suc;
@@ -961,29 +988,26 @@
       }
     }
 
-    function guardarDB() {
-      localStorage.setItem('super_tonita_gerencia_v12', JSON.stringify(dbGlobal));
-      actualizarTodo();
-    }
-
     function iniciarNuevaSemana() {
       let txt = sucursalActual === 'global' ? 'TODAS las sucursales' : sucursalActual.toUpperCase();
       if(confirm(`¿Iniciar nueva semana para ${txt}? Las métricas se reinician a $0.00 conservando todo tu historial.`)) {
         let fechaHoy = new Date().toISOString();
         let sucs = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
-        sucs.forEach(s => dbGlobal[s].inicioSemana = fechaHoy);
-        guardarDB();
+        sucs.forEach(s => {
+          baseDatosGlobal[s].inicioSemana = fechaHoy;
+          guardarEnNube(s);
+        });
         alert("¡Corte de semana realizado!");
       }
     }
 
     function modalModificarSaldo() {
       if(sucursalActual === 'global') { alert("Selecciona una sucursal específica (Corinto, Fuentes o Metapán) para modificar el saldo."); return; }
-      let actual = dbGlobal[sucursalActual].saldoAsignado || 3500;
+      let actual = baseDatosGlobal[sucursalActual].saldoAsignado || 3500;
       let val = prompt(`Nuevo Saldo Operativo para ${sucursalActual.toUpperCase()} ($):`, actual);
       if(val !== null && !isNaN(val) && val.trim() !== '') {
-        dbGlobal[sucursalActual].saldoAsignado = parseFloat(val);
-        guardarDB();
+        baseDatosGlobal[sucursalActual].saldoAsignado = parseFloat(val);
+        guardarEnNube(sucursalActual);
         alert(`¡Saldo de ${sucursalActual.toUpperCase()} actualizado correctamente a $${parseFloat(val).toFixed(2)}!`);
       }
     }
@@ -996,7 +1020,7 @@
       let compsList = [], ventasList = [], agendaList = [];
 
       sucs.forEach(s => {
-        let data = dbGlobal[s];
+        let data = baseDatosGlobal[s];
         tSaldo += (data.saldoAsignado || 0);
         let corte = data.inicioSemana || '';
 
@@ -1031,28 +1055,28 @@
 
       // Render Tablas
       let thC = document.getElementById('thRowCompras');
-      thC.innerHTML = sucursalActual === 'global' ? `<th>Fecha</th><th>Suc</th><th>Proveedor</th><th>Monto</th>` : `<th>Fecha</th><th>Proveedor</th><th>Monto</th><th>Acción</th>`;
+      thC.innerHTML = sucursalActual === 'global' ? `<th>Fecha</th><th>Suc</th><th>Proveedor</th><th>Monto</th><th>Acción</th>` : `<th>Fecha</th><th>Proveedor</th><th>Monto</th><th>Acción</th>`;
       document.getElementById('tbodyCompras').innerHTML = compsList.map(c => `
         <tr>
           <td>${c.fecha.slice(0,10)}</td>
           ${sucursalActual === 'global' ? `<td style="text-transform:uppercase; font-weight:bold;">${c.sucursal}</td>` : ''}
           <td><b>${c.proveedor}</b></td>
           <td style="color:#EF4444;">$${c.monto.toFixed(2)}</td>
-          ${sucursalActual !== 'global' ? `<td><button onclick="eliminarCompra(${c.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td>` : ''}
+          <td><button onclick="eliminarCompra(${c.id}, '${c.sucursal}')" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
         </tr>
-      `).join('') || '<tr><td colspan="4">Sin registros.</td></tr>';
+      `).join('') || '<tr><td colspan="5">Sin registros.</td></tr>';
 
       let thV = document.getElementById('thRowVentas');
-      thV.innerHTML = sucursalActual === 'global' ? `<th>Hora</th><th>Suc</th><th>Tipo</th><th>Neto</th>` : `<th>Hora</th><th>Tipo</th><th>Neto</th><th>Acción</th>`;
+      thV.innerHTML = sucursalActual === 'global' ? `<th>Hora</th><th>Suc</th><th>Tipo</th><th>Neto</th><th>Acción</th>` : `<th>Hora</th><th>Tipo</th><th>Neto</th><th>Acción</th>`;
       document.getElementById('tbodyVentas').innerHTML = ventasList.map(v => `
         <tr>
           <td>${new Date(v.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
           ${sucursalActual === 'global' ? `<td style="text-transform:uppercase; font-weight:bold;">${v.sucursal}</td>` : ''}
           <td><b>${v.metodoPago.toUpperCase()}</b></td>
           <td style="color:#16A34A;">$${(v.metodoPago==='tarjeta'?v.montoNeto:v.total).toFixed(2)}</td>
-          ${sucursalActual !== 'global' ? `<td><button onclick="eliminarVenta(${v.id})" style="border:none; background:none; cursor:pointer;">🗑️</button></td>` : ''}
+          <td><button onclick="eliminarVenta(${v.id}, '${v.sucursal}')" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
         </tr>
-      `).join('') || '<tr><td colspan="4">Sin registros.</td></tr>';
+      `).join('') || '<tr><td colspan="5">Sin registros.</td></tr>';
 
       document.getElementById('tbodyAgenda').innerHTML = agendaList.map(p => `
         <tr>
@@ -1068,7 +1092,7 @@
       if(sucursalActual === 'global') {
         selectCajero.innerHTML = '<option value="Administrador Global">Administrador Global</option>';
       } else {
-        let cjs = dbGlobal[sucursalActual].cajeros || [];
+        let cjs = baseDatosGlobal[sucursalActual].cajeros || [];
         selectCajero.innerHTML = cjs.map(c => `<option value="${c}">${c}</option>`).join('') || '<option value="Cajero General">Cajero General</option>';
       }
 
@@ -1101,23 +1125,20 @@
       let monto = parseFloat(document.getElementById('cMonto').value) || 0;
       let fac = document.getElementById('cFactura').value.trim();
 
-      dbGlobal[sucursalActual].compras.unshift({ id: Date.now(), fecha: new Date().toISOString(), proveedor: prov, monto, factura: fac });
-      
-      // Asegurar que si el proveedor es nuevo se guarde en la lista de proveedores de la sucursal
-      if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
-      if(!dbGlobal[sucursalActual].proveedores.includes(prov)) {
-        dbGlobal[sucursalActual].proveedores.push(prov);
+      baseDatosGlobal[sucursalActual].compras.unshift({ id: Date.now(), fecha: new Date().toISOString(), proveedor: prov, monto, factura: fac });
+      if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
+      if(!baseDatosGlobal[sucursalActual].proveedores.includes(prov)) {
+        baseDatosGlobal[sucursalActual].proveedores.push(prov);
       }
-
-      guardarDB();
+      guardarEnNube(sucursalActual);
       document.getElementById('formCompraDirecta').reset();
-      alert("¡Compra registrada y saldo actualizado!");
+      alert("¡Compra registrada!");
     }
 
-    function eliminarCompra(id) {
+    function eliminarCompra(id, sucOrigen) {
       if(confirm("¿Eliminar compra?")) {
-        dbGlobal[sucursalActual].compras = dbGlobal[sucursalActual].compras.filter(c => c.id !== id);
-        guardarDB();
+        baseDatosGlobal[sucOrigen].compras = baseDatosGlobal[sucOrigen].compras.filter(c => c.id !== id);
+        guardarEnNube(sucOrigen);
       }
     }
 
@@ -1131,16 +1152,16 @@
       let comision = metodo === 'tarjeta' ? (monto * 0.035) : 0;
       let neto = monto - comision;
 
-      dbGlobal[sucursalActual].ventas.unshift({ id: Date.now(), fecha: new Date().toISOString(), metodoPago: metodo, total: monto, comisionTarjeta: comision, montoNeto: neto, cajero });
-      guardarDB();
+      baseDatosGlobal[sucursalActual].ventas.unshift({ id: Date.now(), fecha: new Date().toISOString(), metodoPago: metodo, total: monto, comisionTarjeta: comision, montoNeto: neto, cajero });
+      guardarEnNube(sucursalActual);
       document.getElementById('vMonto').value = '';
       alert("¡Venta registrada!");
     }
 
-    function eliminarVenta(id) {
+    function eliminarVenta(id, sucOrigen) {
       if(confirm("¿Eliminar venta?")) {
-        dbGlobal[sucursalActual].ventas = dbGlobal[sucursalActual].ventas.filter(v => v.id !== id);
-        guardarDB();
+        baseDatosGlobal[sucOrigen].ventas = baseDatosGlobal[sucOrigen].ventas.filter(v => v.id !== id);
+        guardarEnNube(sucOrigen);
       }
     }
 
@@ -1151,14 +1172,12 @@
       let monto = parseFloat(document.getElementById('pMonto').value) || 0;
       let fecha = document.getElementById('pFecha').value;
 
-      dbGlobal[sucursalActual].agenda.push({ id: Date.now(), proveedor: prov, monto, fechaProg: fecha, estado: 'pendiente' });
-      
-      if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
-      if(!dbGlobal[sucursalActual].proveedores.includes(prov)) {
-        dbGlobal[sucursalActual].proveedores.push(prov);
+      baseDatosGlobal[sucursalActual].agenda.push({ id: Date.now(), proveedor: prov, monto, fechaProg: fecha, estado: 'pendiente' });
+      if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
+      if(!baseDatosGlobal[sucursalActual].proveedores.includes(prov)) {
+        baseDatosGlobal[sucursalActual].proveedores.push(prov);
       }
-
-      guardarDB();
+      guardarEnNube(sucursalActual);
       document.getElementById('formAgendaPedido').reset();
       alert("¡Pedido agendado!");
     }
@@ -1167,8 +1186,8 @@
       let sucs = sucursalActual === 'global' ? ['corinto', 'los_fuentes', 'metapan'] : [sucursalActual];
       let provs = new Set();
       sucs.forEach(s => {
-        (dbGlobal[s].proveedores || []).forEach(p => provs.add(p));
-        (dbGlobal[s].compras || []).forEach(c => provs.add(c.proveedor));
+        (baseDatosGlobal[s].proveedores || []).forEach(p => provs.add(p));
+        (baseDatosGlobal[s].compras || []).forEach(c => provs.add(c.proveedor));
       });
 
       document.getElementById('boxCheckProveedores').innerHTML = Array.from(provs).map(p => `
@@ -1187,7 +1206,7 @@
       let res = [];
 
       sucs.forEach(s => {
-        (dbGlobal[s].compras || []).forEach(c => {
+        (baseDatosGlobal[s].compras || []).forEach(c => {
           let d = c.fecha.slice(0,10);
           if(d >= fI && d <= fF && sel.includes(c.proveedor)) res.push({...c, sucursal: s});
         });
@@ -1208,44 +1227,43 @@
         document.getElementById('listaCajerosConfig').innerHTML = "<span style='color:var(--text-muted);'>Selecciona una sucursal específica arriba para gestionar cajeros.</span>";
         return;
       }
-      let ps = dbGlobal[sucursalActual].proveedores || [];
-      let cs = dbGlobal[sucursalActual].cajeros || [];
+      let ps = baseDatosGlobal[sucursalActual].proveedores || [];
+      let cs = baseDatosGlobal[sucursalActual].cajeros || [];
 
-      document.getElementById('listaProvsConfig').innerHTML = ps.map((p, i) => `<div style="padding:6px 0; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F3F4F6;"><span>• ${p}</span> <button onclick="dbGlobal['${sucursalActual}'].proveedores.splice(${i},1); guardarDB(); renderConfig();" style="border:none; background:none; cursor:pointer; color:red; font-size:14px;">🗑️</button></div>`).join('') || '<span style="color:var(--text-muted);">Sin proveedores.</span>';
+      document.getElementById('listaProvsConfig').innerHTML = ps.map((p, i) => `<div style="padding:6px 0; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F3F4F6;"><span>• ${p}</span> <button onclick="baseDatosGlobal['${sucursalActual}'].proveedores.splice(${i},1); guardarEnNube('${sucursalActual}'); renderConfig();" style="border:none; background:none; cursor:pointer; color:red; font-size:14px;">🗑️</button></div>`).join('') || '<span style="color:var(--text-muted);">Sin proveedores.</span>';
       
-      document.getElementById('listaCajerosConfig').innerHTML = cs.map((c, i) => `<div style="padding:6px 0; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F3F4F6;"><span>• ${c}</span> <button onclick="dbGlobal['${sucursalActual}'].cajeros.splice(${i},1); guardarDB(); renderConfig();" style="border:none; background:none; cursor:pointer; color:red; font-size:14px;">🗑️</button></div>`).join('') || '<span style="color:var(--text-muted);">Sin cajeros registrados.</span>';
+      document.getElementById('listaCajerosConfig').innerHTML = cs.map((c, i) => `<div style="padding:6px 0; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F3F4F6;"><span>• ${c}</span> <button onclick="baseDatosGlobal['${sucursalActual}'].cajeros.splice(${i},1); guardarEnNube('${sucursalActual}'); renderConfig();" style="border:none; background:none; cursor:pointer; color:red; font-size:14px;">🗑️</button></div>`).join('') || '<span style="color:var(--text-muted);">Sin cajeros registrados.</span>';
     }
 
     function addProveedor() {
       if(sucursalActual === 'global') { alert("Por favor selecciona una sucursal específica (Corinto, Fuentes o Metapán)."); return; }
       let v = document.getElementById('inputNuevoProv').value.trim();
       if(!v) return;
-      if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
-      if(!dbGlobal[sucursalActual].proveedores.includes(v)) {
-        dbGlobal[sucursalActual].proveedores.push(v);
+      if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
+      if(!baseDatosGlobal[sucursalActual].proveedores.includes(v)) {
+        baseDatosGlobal[sucursalActual].proveedores.push(v);
       }
       document.getElementById('inputNuevoProv').value = '';
-      guardarDB();
+      guardarEnNube(sucursalActual);
       renderConfig();
-      alert("¡Distribuidor/Proveedor guardado con éxito!");
     }
 
     function addCajero() {
       if(sucursalActual === 'global') { alert("Por favor selecciona una sucursal específica (Corinto, Fuentes o Metapán)."); return; }
       let v = document.getElementById('inputNuevoCajero').value.trim();
       if(!v) return;
-      if(!dbGlobal[sucursalActual].cajeros) dbGlobal[sucursalActual].cajeros = [];
-      if(!dbGlobal[sucursalActual].cajeros.includes(v)) {
-        dbGlobal[sucursalActual].cajeros.push(v);
+      if(!baseDatosGlobal[sucursalActual].cajeros) baseDatosGlobal[sucursalActual].cajeros = [];
+      if(!baseDatosGlobal[sucursalActual].cajeros.includes(v)) {
+        baseDatosGlobal[sucursalActual].cajeros.push(v);
       }
       document.getElementById('inputNuevoCajero').value = '';
-      guardarDB();
+      guardarEnNube(sucursalActual);
       renderConfig();
-      alert("¡Cajero guardado con éxito!");
+      cargarSelectCajerosAdmin();
     }
 
     function importarExcel(e) {
-      if(sucursalActual === 'global') { alert("Selecciona una sucursal específica."); return; }
+      if(sucursalActual === 'global') { alert("Selecciona una sucursal."); return; }
       let f = e.target.files[0];
       if(!f) return;
       let r = new FileReader();
@@ -1255,18 +1273,18 @@
         let sheet = wb.Sheets[wb.SheetNames[0]];
         let json = XLSX.utils.sheet_to_json(sheet, {header: 1});
 
-        if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
+        if(!baseDatosGlobal[sucursalActual].proveedores) baseDatosGlobal[sucursalActual].proveedores = [];
         json.forEach(row => { 
           if(row[0]) {
             let pName = String(row[0]).trim();
-            if(!dbGlobal[sucursalActual].proveedores.includes(pName)) {
-              dbGlobal[sucursalActual].proveedores.push(pName);
+            if(!baseDatosGlobal[sucursalActual].proveedores.includes(pName)) {
+              baseDatosGlobal[sucursalActual].proveedores.push(pName);
             }
           } 
         });
-        guardarDB();
+        guardarEnNube(sucursalActual);
         renderConfig();
-        alert("¡Proveedores importados y guardados!");
+        alert("¡Proveedores importados!");
       };
       r.readAsArrayBuffer(f);
     }
@@ -1278,7 +1296,7 @@
       let res = [];
 
       sucs.forEach(s => {
-        let arr = t === 'ventas' ? dbGlobal[s].ventas : dbGlobal[s].compras;
+        let arr = t === 'ventas' ? baseDatosGlobal[s].ventas : baseDatosGlobal[s].compras;
         (arr || []).filter(item => item.fecha.startsWith(f)).forEach(item => res.push({...item, sucursal: s}));
       });
 
@@ -1309,7 +1327,7 @@
       if(tipo === 'compras') {
         html += `<thead><tr><th>Fecha</th><th>Proveedor</th><th>Monto</th></tr></thead><tbody>`;
         sucs.forEach(s => {
-          (dbGlobal[s].compras || []).forEach(c => {
+          (baseDatosGlobal[s].compras || []).forEach(c => {
             let d = c.fecha.slice(0,10);
             if(d >= fI && d <= fF) html += `<tr><td>${d}</td><td>${c.proveedor}</td><td>$${c.monto.toFixed(2)}</td></tr>`;
           });
@@ -1317,7 +1335,7 @@
       } else {
         html += `<thead><tr><th>Fecha</th><th>Cajero</th><th>Método</th><th>Neto</th></tr></thead><tbody>`;
         sucs.forEach(s => {
-          (dbGlobal[s].ventas || []).forEach(v => {
+          (baseDatosGlobal[s].ventas || []).forEach(v => {
             let d = v.fecha.slice(0,10);
             if(d >= fI && d <= fF) html += `<tr><td>${d}</td><td>${v.cajero || 'N/A'}</td><td>${v.metodoPago.toUpperCase()}</td><td>$${(v.metodoPago==='tarjeta'?v.montoNeto:v.total).toFixed(2)}</td></tr>`;
           });
