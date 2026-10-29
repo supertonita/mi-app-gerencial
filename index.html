@@ -978,12 +978,13 @@
     }
 
     function modalModificarSaldo() {
-      if(sucursalActual === 'global') { alert("Selecciona una sucursal específica para modificar el saldo."); return; }
+      if(sucursalActual === 'global') { alert("Selecciona una sucursal específica (Corinto, Fuentes o Metapán) para modificar el saldo."); return; }
       let actual = dbGlobal[sucursalActual].saldoAsignado || 3500;
-      let val = prompt(`Nuevo Saldo para ${sucursalActual.toUpperCase()} ($):`, actual);
-      if(val !== null && !isNaN(val)) {
+      let val = prompt(`Nuevo Saldo Operativo para ${sucursalActual.toUpperCase()} ($):`, actual);
+      if(val !== null && !isNaN(val) && val.trim() !== '') {
         dbGlobal[sucursalActual].saldoAsignado = parseFloat(val);
         guardarDB();
+        alert(`¡Saldo de ${sucursalActual.toUpperCase()} actualizado correctamente a $${parseFloat(val).toFixed(2)}!`);
       }
     }
 
@@ -1062,10 +1063,13 @@
         </tr>
       `).join('') || '<tr><td colspan="4">Sin pedidos.</td></tr>';
 
-      // Render Carga de Cajeros en Select
-      if(sucursalActual !== 'global') {
+      // Render Carga de Cajeros en Select de Ventas
+      let selectCajero = document.getElementById('vCajeroSelect');
+      if(sucursalActual === 'global') {
+        selectCajero.innerHTML = '<option value="Administrador Global">Administrador Global</option>';
+      } else {
         let cjs = dbGlobal[sucursalActual].cajeros || [];
-        document.getElementById('vCajeroSelect').innerHTML = cjs.map(c => `<option value="${c}">${c}</option>`).join('') || '<option value="Cajero General">Cajero General</option>';
+        selectCajero.innerHTML = cjs.map(c => `<option value="${c}">${c}</option>`).join('') || '<option value="Cajero General">Cajero General</option>';
       }
 
       renderGraficoBarras(ventasList);
@@ -1073,7 +1077,7 @@
 
     function renderGraficoBarras(ventasList) {
       let dias = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-      let montos = [450, 620, 800, 540, 950, 1100, 700]; // Valores visuales simulados limpios
+      let montos = [450, 620, 800, 540, 950, 1100, 700];
       let max = Math.max(...montos);
 
       let html = dias.map((d, i) => {
@@ -1098,9 +1102,16 @@
       let fac = document.getElementById('cFactura').value.trim();
 
       dbGlobal[sucursalActual].compras.unshift({ id: Date.now(), fecha: new Date().toISOString(), proveedor: prov, monto, factura: fac });
+      
+      // Asegurar que si el proveedor es nuevo se guarde en la lista de proveedores de la sucursal
+      if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
+      if(!dbGlobal[sucursalActual].proveedores.includes(prov)) {
+        dbGlobal[sucursalActual].proveedores.push(prov);
+      }
+
       guardarDB();
       document.getElementById('formCompraDirecta').reset();
-      alert("¡Compra registrada!");
+      alert("¡Compra registrada y saldo actualizado!");
     }
 
     function eliminarCompra(id) {
@@ -1141,6 +1152,12 @@
       let fecha = document.getElementById('pFecha').value;
 
       dbGlobal[sucursalActual].agenda.push({ id: Date.now(), proveedor: prov, monto, fechaProg: fecha, estado: 'pendiente' });
+      
+      if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
+      if(!dbGlobal[sucursalActual].proveedores.includes(prov)) {
+        dbGlobal[sucursalActual].proveedores.push(prov);
+      }
+
       guardarDB();
       document.getElementById('formAgendaPedido').reset();
       alert("¡Pedido agendado!");
@@ -1187,39 +1204,48 @@
 
     function renderConfig() {
       if(sucursalActual === 'global') {
-        document.getElementById('listaProvsConfig').innerText = "Selecciona una sucursal.";
-        document.getElementById('listaCajerosConfig').innerText = "Selecciona una sucursal.";
+        document.getElementById('listaProvsConfig').innerHTML = "<span style='color:var(--text-muted);'>Selecciona una sucursal específica arriba para gestionar proveedores.</span>";
+        document.getElementById('listaCajerosConfig').innerHTML = "<span style='color:var(--text-muted);'>Selecciona una sucursal específica arriba para gestionar cajeros.</span>";
         return;
       }
       let ps = dbGlobal[sucursalActual].proveedores || [];
       let cs = dbGlobal[sucursalActual].cajeros || [];
 
-      document.getElementById('listaProvsConfig').innerHTML = ps.map((p, i) => `<div style="padding:4px 0;">• ${p} <button onclick="dbGlobal['${sucursalActual}'].proveedores.splice(${i},1); guardarDB();" style="border:none; background:none; cursor:pointer; color:red;">🗑️</button></div>`).join('');
-      document.getElementById('listaCajerosConfig').innerHTML = cs.map((c, i) => `<div style="padding:4px 0;">• ${c} <button onclick="dbGlobal['${sucursalActual}'].cajeros.splice(${i},1); guardarDB();" style="border:none; background:none; cursor:pointer; color:red;">🗑️</button></div>`).join('');
+      document.getElementById('listaProvsConfig').innerHTML = ps.map((p, i) => `<div style="padding:6px 0; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F3F4F6;"><span>• ${p}</span> <button onclick="dbGlobal['${sucursalActual}'].proveedores.splice(${i},1); guardarDB(); renderConfig();" style="border:none; background:none; cursor:pointer; color:red; font-size:14px;">🗑️</button></div>`).join('') || '<span style="color:var(--text-muted);">Sin proveedores.</span>';
+      
+      document.getElementById('listaCajerosConfig').innerHTML = cs.map((c, i) => `<div style="padding:6px 0; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F3F4F6;"><span>• ${c}</span> <button onclick="dbGlobal['${sucursalActual}'].cajeros.splice(${i},1); guardarDB(); renderConfig();" style="border:none; background:none; cursor:pointer; color:red; font-size:14px;">🗑️</button></div>`).join('') || '<span style="color:var(--text-muted);">Sin cajeros registrados.</span>';
     }
 
     function addProveedor() {
-      if(sucursalActual === 'global') return;
+      if(sucursalActual === 'global') { alert("Por favor selecciona una sucursal específica (Corinto, Fuentes o Metapán)."); return; }
       let v = document.getElementById('inputNuevoProv').value.trim();
       if(!v) return;
       if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
-      dbGlobal[sucursalActual].proveedores.push(v);
+      if(!dbGlobal[sucursalActual].proveedores.includes(v)) {
+        dbGlobal[sucursalActual].proveedores.push(v);
+      }
       document.getElementById('inputNuevoProv').value = '';
       guardarDB();
+      renderConfig();
+      alert("¡Distribuidor/Proveedor guardado con éxito!");
     }
 
     function addCajero() {
-      if(sucursalActual === 'global') return;
+      if(sucursalActual === 'global') { alert("Por favor selecciona una sucursal específica (Corinto, Fuentes o Metapán)."); return; }
       let v = document.getElementById('inputNuevoCajero').value.trim();
       if(!v) return;
       if(!dbGlobal[sucursalActual].cajeros) dbGlobal[sucursalActual].cajeros = [];
-      dbGlobal[sucursalActual].cajeros.push(v);
+      if(!dbGlobal[sucursalActual].cajeros.includes(v)) {
+        dbGlobal[sucursalActual].cajeros.push(v);
+      }
       document.getElementById('inputNuevoCajero').value = '';
       guardarDB();
+      renderConfig();
+      alert("¡Cajero guardado con éxito!");
     }
 
     function importarExcel(e) {
-      if(sucursalActual === 'global') { alert("Selecciona una sucursal."); return; }
+      if(sucursalActual === 'global') { alert("Selecciona una sucursal específica."); return; }
       let f = e.target.files[0];
       if(!f) return;
       let r = new FileReader();
@@ -1230,9 +1256,17 @@
         let json = XLSX.utils.sheet_to_json(sheet, {header: 1});
 
         if(!dbGlobal[sucursalActual].proveedores) dbGlobal[sucursalActual].proveedores = [];
-        json.forEach(row => { if(row[0]) dbGlobal[sucursalActual].proveedores.push(String(row[0]).trim()); });
+        json.forEach(row => { 
+          if(row[0]) {
+            let pName = String(row[0]).trim();
+            if(!dbGlobal[sucursalActual].proveedores.includes(pName)) {
+              dbGlobal[sucursalActual].proveedores.push(pName);
+            }
+          } 
+        });
         guardarDB();
-        alert("¡Proveedores importados!");
+        renderConfig();
+        alert("¡Proveedores importados y guardados!");
       };
       r.readAsArrayBuffer(f);
     }
@@ -1254,7 +1288,7 @@
       document.getElementById('tbodyHistorial').innerHTML = res.map(item => `
         <tr>
           <td>${new Date(item.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-          <td><b>${t === 'ventas' ? item.metodoPago.toUpperCase() : item.proveedor}</b></td>
+          <td><b>${t === 'ventas' ? item.metodoPago.toUpperCase() + ' (' + (item.cajero || 'General') + ')' : item.proveedor}</b></td>
           <td style="font-weight:700; color:${t==='ventas'?'#16A34A':'#EF4444'}">$${(t === 'ventas' ? (item.metodoPago === 'tarjeta' ? item.montoNeto : item.total) : item.monto).toFixed(2)}</td>
         </tr>
       `).join('') || '<tr><td colspan="3">Sin movimientos.</td></tr>';
@@ -1281,11 +1315,11 @@
           });
         });
       } else {
-        html += `<thead><tr><th>Fecha</th><th>Método</th><th>Neto</th></tr></thead><tbody>`;
+        html += `<thead><tr><th>Fecha</th><th>Cajero</th><th>Método</th><th>Neto</th></tr></thead><tbody>`;
         sucs.forEach(s => {
           (dbGlobal[s].ventas || []).forEach(v => {
             let d = v.fecha.slice(0,10);
-            if(d >= fI && d <= fF) html += `<tr><td>${d}</td><td>${v.metodoPago.toUpperCase()}</td><td>$${(v.metodoPago==='tarjeta'?v.montoNeto:v.total).toFixed(2)}</td></tr>`;
+            if(d >= fI && d <= fF) html += `<tr><td>${d}</td><td>${v.cajero || 'N/A'}</td><td>${v.metodoPago.toUpperCase()}</td><td>$${(v.metodoPago==='tarjeta'?v.montoNeto:v.total).toFixed(2)}</td></tr>`;
           });
         });
       }
